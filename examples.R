@@ -1,87 +1,132 @@
-source.all()
-library(survival)
-#library(predict)
-citation("breastCancerUPP")
+source.all("~/private/predict/predict/R/")
+library(foreach)
+
+#--------------------------------------------------------------[ The real file ]
+
+# Install necessary CRAN packages
+required.pkg <- c("survival", "predict")
+installed.pkg <- sapply(required.pkg, require, character.only=TRUE)
+if(any(!installed.pkg)){
+    install.packages(required.pkg[!installed.pkg])
+}
+
 
 #===============================================================================
 #   Section 3.1: A parallelized simulation study
 #-------------------------------------------------------------------------------
 
-set.seed(123)
-source("generate_data.R")
-
-# Setup parallelization
+library(randomForest) # Preload the package so it won't affect the timing
 library(parallel)
-options(mc.cores = 8)
+options(mc.cores = 3)
+
+set.seed(123)
+x <- matrix(rnorm(100*10000), 100, 10000)
+y <- gl(2, 50)
 
 # Define a serial random forest process
-proc <- modelling.procedure("randomForest")
+proc <- modelling.procedure("randomForest", param=list(ntree=3000))
 
-# Redefine the fitting function to parallelize it
+# Define a parallelized processes by replacing the fitting function
 parProc <- proc
-parProc$fit.fun <- function(..., ntree=1000){
-    # Divide the trees on all workers
-    ntree <- round(rep(ntree/getOption("mc.cores"), getOption("mc.cores")))
-    combine(mclapply(ntree, randomForest, ...))
+parProc$fit.fun <- function(..., ntree){
+    # Calculate how many trees each worker needs compute
+    nc <- getOption("mc.cores")
+    ntree <- table(findInterval(1:ntree, ntree/nc * (seq_along(nc)-1)))
+
+    # Fit the workers' forests
+    forests <- mclapply(ntree, function(nt) randomForest(..., ntree=nt))
+
+    # Combine the workers' forests into a single forest
+    do.call(combine, forests)
 }
 
+# Compare computation time
 system.time(model <- fit(proc, x, y))
+#   user  system elapsed 
+# 89.024   0.182  89.152 
+
 system.time(parModel <- fit(parProc, x, y))
+#   user  system elapsed 
+# 62.836   0.073  34.016 
 
 
 #===============================================================================
 #   Section 3.2: Customized survival analysis modelling
 #-------------------------------------------------------------------------------
 
-source("http://bioconductor.org/biocLite.R")
-biocLite("Biobase")
-biocLite("breastCancerUPP")
-
-#-------------------------------------------------------------------------------
+# Install necessary bioconductor packages
+required.pkg <- c("Biobase", "breastCancerUPP")
+installed.pkg <- sapply(required.pkg, require, character.only=TRUE)
+if(any(!installed.pkg)){
+    source("http://bioconductor.org/biocLite.R")
+    biocLite(required.pkg[!installed.pkg])
+}
 
 # Load data
-library(Biobase)
-library(breastCancerUPP)
 data(upp)
 pheno <- pData(upp)
-sample.idx <- pheno$treatment %in% 2
+sample.idx <- with(pheno, treatment %in% 2 & !is.na(t.rfs) & !is.na(e.rfs))
 x <- t(exprs(upp))[sample.idx,]
-y <- with(pheno[sample.idx,], Surv(t.rfs, e.rfs))
+y <- with(pheno[sample.idx,],
+          outcome(t.rfs, factor(e.rfs, levels=1, labels="relapse")))
 
 # Setup analysis
 pre.pca <- function(x, y, fold){
-    pca <- prcomp(x[na.fill(!fold, FALSE),,drop=FALSE])
+    pca <- prcomp(x[na.fill(!fold, FALSE),,drop=FALSE], scale.=TRUE)
     list(fit = pca$x,
-         test = x[na.fill(fold, FALSE),] %*% pca$rotation)
+         test = predict(pca, x[na.fill(fold, FALSE),]))
 }
 proc <- modelling.procedure(
-    fit.fun = function(x, y, nfeat)
+    fit.fun = function(x, y, nfeat){
         list(nfeat = nfeat,
-             cox = coxph(y ~ ., data.frame(x[, 1:nfeat, drop=FALSE]))),
+             cox = coxph(as.Surv(y) ~ ., data.frame(x[, 1:nfeat, drop=FALSE])))
+    },
     predict.fun = function(fit, x)
-        list(risk = predict(fit,
+        list(risk = predict(fit$cox,
             data.frame(x[, 1:fit$nfeat, drop=FALSE]), type="risk")),
     param = list(nfeat = c(1, 2, 3, 5, 9, 15, 25)))
 
-ho <- resample.holdout(y[,"status"], frac=.25, nrep=10)
+ho <- resample.holdout(y, frac=.25, nrep=10)
 
 # Run
-perf <- evaluate.modelling(proc, x, y, ho, pre.pca)
-ssubtree(perf, T, T, "error")
+set.seed(123)
+perf <- evaluate.modelling(proc, x, y, ho, pre.pca, .save=list(pred=TRUE, tuning=TRUE))
 
-#----------------------------------------------------------------------[ kladd ]
-sets <- pre.pca(x, y, ho[[1]])
-my.fit <- fit(proc, sets$fit, y[!ho[[1]]])
-pred <- predict.cox(my.fit[[1]], sets$test)
-neg.harrell.C(y[na.fill(ho[[1]], FALSE)], pred)
+# Present results
+subtree(perf, T, T, "error")
+
+# Plots tuning performance of the folds
+mean.err <- sapply(subtree(perf, T, T, "tuning", "error"), apply, 1, mean)
+matplot(unlist(proc$tuning$param), -mean.err, type="l", lty=1,
+        xlab="Number of PCA components", ylab="Mean Harrell's C")
+dev.off()
 
 
 #===============================================================================
 #   Section 3.3: Methylation based subtyping
 #-------------------------------------------------------------------------------
 
-#-------------------------------------------------------------------------------
+if(file.exists("data/all_methylation.Rdata")){
+    load("data/all_methylation.Rdata")
+} else {
+    source("download_methylation.R")
+}
 
+y <- factor(all.pheno$subtype, levels=c("T-ALL", "t(12;21)", "HeH"))
+all.met <- all.met[!is.na(y),]
+y <- y[!is.na(y)]
 
+proc <- modelling.procedure("pamr")
+cv <- resample.crossval(y, 5, 3)
 
+# Pre-calculate the distance matirx, to avoid recalculating it in every fold
+if(file.exists("data/all_dist.Rdata")){
+    load("data/all_dist.Rdata")
+} else {
+    all.dist <- dist(all.met)
+    save(all.dist, file="data/all_dist.Rdata")
+}
+
+pred <- evaluate.modelling(proc, all.met, y, test.subset=cv,
+    pre.process=function(...) pre.impute.knn(..., distmat=all.dist))
 

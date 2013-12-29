@@ -37,7 +37,7 @@ if(framework == "caret"){
         rm(tmp.fit)
         computation.time <- system.time(
             result <- train(x, y, "glmnet",
-                            trControl = cv.control, tuneGrid=paramGrid)
+                trControl = cv.control, tuneGrid=paramGrid)
         )
     } else if(algorithm == "randomForest"){
         paramGrid <- data.frame(.mtry = floor(sqrt(ncol(x))))
@@ -69,5 +69,4 @@ if(framework == "caret"){
 
 save(computation.time, result,
     file=sprintf("results/%s_%s_%i.Rdata", framework, algorithm, n.feat))
-
 

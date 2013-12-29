@@ -1,28 +1,12 @@
 
-#------------------------------------o
-#   Make directory structure and download data
-
 dir.create("data", showWarnings=FALSE)
 dir.create("results", showWarnings=FALSE)
 dir.create("runcontrol", showWarnings=FALSE)
 
-source("download_methylation.R")
-
-
-#------------------------------------o
-#   Install required packages
-
-required.pkg <- list(CRAN = c("caret", "doMC", "glmnet", "predict", "randomForest"),
-                     BioConductor = "GEOquery")
+required.pkg <- c("caret", "doMC", "glmnet", "predict", "randomForest")
 installed.pkg <- rownames(installed.packages())
-
 for(pkg in setdiff(required.pkg$CRAN, installed.pkg))
     install.packages(pkg)
-if(any(!required.pkg$BioConductor %in% installed.pkg)){
-    source("http://bioconductor.org/biocLite.R")
-    for(pkg in setdiff(required.pkg$BioConductor, installed.packages))
-        biocLite(pkg)
-}
 
 
 #------------------------------------o
@@ -32,23 +16,27 @@ method.n.feat <- list(      glmnet = round(10^seq(2, 5, by=.5)),
                       randomForest = round(10^seq(2, 4, by=1/3)))
 n.feat <- unique(unlist(method.n.feat))
 
-data.files <- sprintf("data/met_%i.Rdata", n.feat)
+data.files <- c("data/common.Rdata", sprintf("data/met_%i.Rdata", n.feat))
 data.file.missing <- !sapply(data.files, file.exists)
 
 if(any(data.file.missing)){
     library(predict)
-    library(analyse450k)
-    load.450k.data("all")
+    if(file.exists("data/methylation_data.Rdata")){
+        load("data/methylation_data.Rdata")
+    } else {
+        source("download_methylation.R")
+    }
+
     sample.idx <- all.pheno$subtype %in% c("T-ALL", "HeH", "t(12;21)")
     y <- factor(all.pheno$subtype[sample.idx])
     cv <- resample.crossval(y, 5, 3)
-    all.met <- t(all.met[1:max(n.feat),sample.idx])
+    save(sample.idx, y, cv, method.n.feat, file="data/common.Rdata")
 
+    all.met <- all.met[sample.idx,1:max(n.feat)]
     for(nf in n.feat[data.file.missing]){
         x <- na.fill(all.met[,1:nf], .5)
         save(x, file=sprintf("data/met_%i.Rdata", nf))
     }
-    save(sample.idx, y, cv, method.n.feat, file="data/common.Rdata")
 }
 
 
