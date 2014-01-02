@@ -1,5 +1,7 @@
+source.all("~/Documents/R/egna paket/predict/predict/R/")
 source.all("~/private/predict/predict/R/")
 library(foreach)
+library(survival)
 
 #--------------------------------------------------------------[ The real file ]
 
@@ -12,12 +14,8 @@ if(any(!installed.pkg)){
 
 
 #===============================================================================
-#   Section 3.1: A parallelized simulation study
+#   Section 3.1: A parallelized simulation
 #-------------------------------------------------------------------------------
-
-library(randomForest) # Preload the package so it won't affect the timing
-library(parallel)
-options(mc.cores = 3)
 
 set.seed(123)
 x <- matrix(rnorm(100*10000), 100, 10000)
@@ -27,6 +25,8 @@ y <- gl(2, 50)
 proc <- modelling.procedure("randomForest", param=list(ntree=3000))
 
 # Define a parallelized processes by replacing the fitting function
+library(parallel)
+options(mc.cores = 3)
 parProc <- proc
 parProc$fit.fun <- function(..., ntree){
     # Calculate how many trees each worker needs compute
@@ -41,6 +41,7 @@ parProc$fit.fun <- function(..., ntree){
 }
 
 # Compare computation time
+library(randomForest) # Preload to not affect timing
 system.time(model <- fit(proc, x, y))
 #   user  system elapsed 
 # 89.024   0.182  89.152 
@@ -117,7 +118,7 @@ all.met <- all.met[!is.na(y),]
 y <- y[!is.na(y)]
 
 proc <- modelling.procedure("pamr")
-cv <- resample.crossval(y, 5, 3)
+cv <- resample.crossval(y, 5, 1)
 
 # Pre-calculate the distance matirx, to avoid recalculating it in every fold
 if(file.exists("data/all_dist.Rdata")){
@@ -127,6 +128,19 @@ if(file.exists("data/all_dist.Rdata")){
     save(all.dist, file="data/all_dist.Rdata")
 }
 
+# Setup memory tracking
+tracemem(all.met)
+my.pre.process <- function(...){
+    x <- pre.pamr(..., pre.process=pre.impute.knn, distmat=all.dist)
+    trace.msg(4, tracemem(x))
+    x
+}
+
+# Execute modelling
 pred <- evaluate.modelling(proc, all.met, y, test.subset=cv,
-    pre.process=function(...) pre.impute.knn(..., distmat=all.dist))
+                           pre.process=my.pre.process)
+
+sets <- pre.pamr(all.met, y, cv[[1]])
+ff <- fit(proc, sets$fit)
+proc$predict.fun(ff[[1]], sets$test)
 

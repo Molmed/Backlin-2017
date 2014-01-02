@@ -5,7 +5,7 @@ dir.create("runcontrol", showWarnings=FALSE)
 
 required.pkg <- c("caret", "doMC", "glmnet", "predict", "randomForest")
 installed.pkg <- rownames(installed.packages())
-for(pkg in setdiff(required.pkg$CRAN, installed.pkg))
+for(pkg in setdiff(required.pkg, installed.pkg))
     install.packages(pkg)
 
 
@@ -21,8 +21,8 @@ data.file.missing <- !sapply(data.files, file.exists)
 
 if(any(data.file.missing)){
     library(predict)
-    if(file.exists("data/methylation_data.Rdata")){
-        load("data/methylation_data.Rdata")
+    if(file.exists("data/all_methylation.Rdata")){
+        load("data/all_methylation.Rdata")
     } else {
         source("download_methylation.R")
     }
@@ -33,7 +33,7 @@ if(any(data.file.missing)){
     save(sample.idx, y, cv, method.n.feat, file="data/common.Rdata")
 
     all.met <- all.met[sample.idx,1:max(n.feat)]
-    for(nf in n.feat[data.file.missing]){
+    for(nf in n.feat[data.file.missing[-1]]){
         x <- na.fill(all.met[,1:nf], .5)
         save(x, file=sprintf("data/met_%i.Rdata", nf))
     }
@@ -83,6 +83,6 @@ R -f modeling.R --vanilla --args ",framework," ",algorithm," ",dimension,"
 for(i in seq_along(batch.script)){
     f <- paste0("runcontrol/", runs$name[i], ".sh")
     cat(batch.script[i], file=f)
-    system(paste0("sbatch ", f))
+    #system(paste0("sbatch ", f))
 }
 
