@@ -21,7 +21,7 @@ set.seed(123)
 x <- matrix(rnorm(100*10000), 100, 10000)
 y <- gl(2, 50)
 
-# Define a serial random forest process
+# Define an ordinary sequential random forest process
 proc <- modelling.procedure("randomForest", param=list(ntree=3000))
 
 # Define a parallelized processes by replacing the fitting function

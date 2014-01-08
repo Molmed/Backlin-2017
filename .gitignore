@@ -1,0 +1,6 @@
+data
+memstats
+plots
+results
+runcontrol
+*.Rdata

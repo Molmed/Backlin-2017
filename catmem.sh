@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 
 echo "Job started" >> memstats/$1.log
 date +"%Y-%m-%d %H:%M:%S" > memstats/$1.log
