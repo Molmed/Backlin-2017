@@ -1,9 +1,11 @@
 #!/usr/bin/Rscript
+# Run this script in the repo root
 
-for(d in c("data", "results", "runcontrol", "plots", "memstats"))
-    dir.create(d, showWarnings=FALSE)
+#------------------------------------o
+#   Install packages
 
-required.pkg <- c("caret", "doMC", "glmnet", "pamr", "predict", "randomForest")
+required.pkg <- c("caret", "data.table", "doMC", "glmnet", "pamr", "predict",
+                  "randomForest")
 installed.pkg <- rownames(installed.packages())
 for(pkg in setdiff(required.pkg, installed.pkg))
     install.packages(pkg)
@@ -12,6 +14,7 @@ for(pkg in setdiff(required.pkg, installed.pkg))
 #------------------------------------o
 #   Create bite size datasets to speed up loading
 
+dir.create("data", showWarnings = FALSE)
 n.feat <- round(10^seq(2, 5, by=.5))
 data.files <- c("data/common.Rdata", sprintf("data/met_%i.Rdata", n.feat))
 data.file.missing <- !sapply(data.files, file.exists)
@@ -37,30 +40,56 @@ if(any(data.file.missing)){
 }
 
 
+#------------------------------------o
+#   Setup the run
+
+run.folder <- "run_140329"
+    #sprintf("run_%s", format(Sys.time(), "%y%m%d"))
+
+if(!file.exists(run.folder)){
+    dir.create(run.folder)
+    setwd(run.folder)
+    system("ln -s ../catmem.sh .")
+    system("ln -s ../benchmark.R .")
+} else {
+    setwd(run.folder)
+}
+
+for(d in c("runcontrol", "memstats", "results", "plots"))
+    dir.create(d, showWarnings=FALSE)
+
+
 #--------------------------------------o
 #   Figure out what runs to compute
 
+library(data.table)
 sec2time <- function(x){
     x <- round(x)
     sprintf("%i-%02i:%02i:%02i", x %/% (24*60*60),
             x %% (24*60*60) %/% (60*60), x %% (60*60) %/% 60, x %% 60)
 }
-runs <- data.frame(
+runs <- data.table(
     framework = gl(2, length(n.feat)*3, labels=c("caret", "predict")),
     algorithm = gl(3, length(n.feat), labels=c("glmnet", "pamr", "randomForest")),
     dimension = n.feat,
-    max.time = sec2time(60 * (15 + 4*60 * n.feat/max(n.feat))))
+    max.time = sec2time(60*60*c(1+23*n.feat/10000,
+                                seq(.1, 1, length.out=length(n.feat)),
+                                1+23*n.feat/10000)
+    )
+)
 runs$name <- with(runs, sprintf("%s_%s_%i", framework, algorithm, dimension))
 runs$id <- gsub("([a-zA-Z])[a-zA-Z]*_", "\\1", runs$name)
 
 # Remove all runs that have been completed
-runs <- runs[!paste0(runs$name, ".Rdata") %in% dir("results"),]
-runs <- runs[order(runs$max.time, decreasing=FALSE),]
-runs <- runs[runs$dimension < 10000,]
+runs <- runs[!paste0(name, ".Rdata") %in% dir("results")]
+# And runs taking too long
+runs <- runs[grepl("^[0-1]", max.time)]
+# Sort the runs as you like
+runs <- runs[order(dimension == 100, max.time, decreasing=TRUE)]
+
 
 #--------------------------------------o
 #   Create batch scripts and launch
-
 
 batch.script <- with(runs, paste0("#!/bin/sh -l
 #SBATCH -A b2010028

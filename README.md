@@ -8,7 +8,7 @@ This repository contains all code examples and code used to perform the benchmar
 
 System requirements
 -------------------
-The code is written for a Unix or Linux operating system with R version 3.0.1 or later, but can be modified to run under Windows fairly easily. Packages `randomForest`, `glmnet` and `doMC` are required, but are installed automatically.
+The code is written for a Unix or Linux operating system with R version 3.0.1 or later, but can be modified to run under Windows fairly easily. The following packages are required, but installed automatically: `caret`, `data.table`, `doMC`, `glmnet`, `pamr`, `predict`, and `randomForest`.
 
 Instructions
 ------------
@@ -16,7 +16,6 @@ The most convenient way to run the analysis is to clone the repo to your compute
 
     git clone git@github.com:Molmed/Nordlund-2013.git
     cd Backlin-2014
-    R -f setup.R
-    R -f benchmark.R
+    R -f benchmark_setup.R
 
 The file `examples.R` contain the code examples presented in the paper.
