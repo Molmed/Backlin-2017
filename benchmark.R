@@ -5,13 +5,13 @@ arg <- arg[-(1:which(arg == "--args"))]
 
 framework <- arg[1]
 stopifnot(framework %in% c("caret", "predict"))
-library(caret)
-library(predict)
-library(class)
+require(caret)
+require(emil)
+require(class)
 
 algorithm <- arg[2]
 stopifnot(algorithm %in% c("glmnet", "pamr", "randomForest"))
-library(algorithm, character.only=TRUE)
+require(algorithm, character.only=TRUE)
 
 load("../data/common.Rdata")
 n.feat <- as.integer(arg[3])
@@ -55,7 +55,7 @@ if(framework == "caret"){
         }
     }
     if(algorithm == "randomForest"){
-        library(doMC)
+        require(doMC)
         registerDoMC(16)
     }
 
@@ -79,7 +79,7 @@ if(framework == "caret"){
         pre.proc <- pre.pamr
     }
     if(algorithm == "randomForest"){
-        library(parallel)
+        require(parallel)
         options(mc.cores = 16)
         proc$fit.fun <- function(..., ntree){
             nc <- getOption("mc.cores")

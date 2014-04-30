@@ -1,8 +1,6 @@
-library(emil)
-library(analyse450k)
-library(gtools)
-library(foreach)
-library(data.table)
+require(emil)
+require(gtools)
+require(data.table)
 
 nice.axis <- function(..., las = 1, lwd = par("lwd"), lwd.ticks = lwd, lend = 2){
     axis(..., las = las, lwd = 0, lwd.ticks = lwd.ticks, lend = 1)
@@ -12,6 +10,10 @@ nice.axis <- function(..., las = 1, lwd = par("lwd"), lwd.ticks = lwd, lend = 2)
         do.call(axis, args)
     }
 }
+vlines <- function (x, lend = 1, ...)
+    segments(x, par("usr")[3], x, par("usr")[4], lend = lend, ...)
+hlines <- function (y, lend = 1, ...)
+    segments(par("usr")[1], y, par("usr")[2], y, lend = lend, ...)
 
 runs <- c("run_140325", "run_140329", "run_140417")
 
@@ -20,7 +22,7 @@ logs <- lapply(runs, function(r){
     names(l) <- sub("^.*/(\\w+)\\.log", "\\1", l)
     l
 })
-mems <- lapply(logs, function(l) foreach(f = l, .combine=rbind) %do% {
+mems <- lapply(logs, function(l) do.call(rbind, lapply(l, function(f){
     tab <- readLines(f)
     if(length(tab) == 44) return(NULL)
 
@@ -38,7 +40,7 @@ mems <- lapply(logs, function(l) foreach(f = l, .combine=rbind) %do% {
                mem=#log10(mem)
                    cummax(log10(mem))
     )
-})
+}))
 runs.completed <- lapply(logs, function(l) data.table(
     framework = sub(".*(caret|predict).*", "\\1", l),
     algorithm = sub(".*(glmnet|pamr|randomForest).*", "\\1", l),

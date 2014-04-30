@@ -1,4 +1,4 @@
-Developer Friendly Predictive Modelling with the `emil` Package for R
+Developer Friendly Predictive Modeling with the `emil` Package for R
 =======================
 Christofer L Bäcklin, Mats G Gustafsson
 

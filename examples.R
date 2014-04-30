@@ -1,6 +1,6 @@
 
 # Install and load required packages
-required.pkg <- c("emil", "survival", "predict")
+required.pkg <- c("emil", "parallel", "randomForest", "survival")
 installed.pkg <- sapply(required.pkg, require, character.only=TRUE)
 if(any(!installed.pkg)){
     install.packages(required.pkg[!installed.pkg])
@@ -50,7 +50,7 @@ dev.off()
 #-------------------------------------------------------------------------------
 
 # Set up the problem
-library(randomForest)
+require(randomForest)
 x <- matrix(rnorm(100*10000), 100, 10000)
 y <- gl(2, 50)
 cv <- resample.crossval(y, nfold=8, nrep=4)
@@ -64,7 +64,7 @@ system.time(perf.par1 <- evaluate.modeling(proc, x, y, resample = cv,
                                            .parallel.cores = 16))
 
 # Set up and evaluate the alternative parallel solution
-library(parallel)
+require(parallel)
 options(mc.cores = 16)
 parProc <- proc
 parProc$fit.fun <- function(..., ntree){

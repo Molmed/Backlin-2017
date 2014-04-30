@@ -1,13 +1,10 @@
-#X11(, 14/cm(1), 21/cm(1))
-#X11(, 21/cm(1), 14/cm(1))
+#X11(, 14/cm(1), 21/cm(1)) # For portrait
+#X11(, 21/cm(1), 14/cm(1)) # For landscape
 pal <- cbind(
     caret = hsv(seq(1/6, 0, len=7), .5, seq(.9, .8, length.out=7)),
     predict = hsv(seq(1/6, .5, len=7), .5, seq(.9, .8, length.out=7))
 )
 rownames(pal) <- sort(unique(mems$dimension))
-#image(matrix(1:12, 6), col=pal.light)
-#pal <- c(caret="#ee8800", predict="#000080")
-#pal.light <- c(caret="#f9d8ab", predict="#ababd5")
 orientation <- c("portrait", "landscape")[1]
 
 # Set up device

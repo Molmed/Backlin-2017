@@ -4,7 +4,7 @@
 #------------------------------------o
 #   Install packages
 
-required.pkg <- c("caret", "data.table", "doMC", "glmnet", "pamr", "predict",
+required.pkg <- c("caret", "data.table", "doMC", "emil", "glmnet", "pamr",
                   "randomForest")
 installed.pkg <- rownames(installed.packages())
 for(pkg in setdiff(required.pkg, installed.pkg))
@@ -20,7 +20,7 @@ data.files <- c("data/common.Rdata", sprintf("data/met_%i.Rdata", n.feat))
 data.file.missing <- !sapply(data.files, file.exists)
 
 if(any(data.file.missing)){
-    library(predict)
+    require(emil)
     if(file.exists("data/all_methylation.Rdata")){
         load("data/all_methylation.Rdata")
     } else {
@@ -62,7 +62,7 @@ for(d in c("runcontrol", "memstats", "results"))
 #--------------------------------------o
 #   Figure out what runs to compute
 
-library(data.table)
+require(data.table)
 sec2time <- function(x){
     x <- round(x)
     sprintf("%i-%02i:%02i:%02i", x %/% (24*60*60),
