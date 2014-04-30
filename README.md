@@ -1,20 +1,20 @@
-Developer Friendly Predictive Modelling with the `predict` Package for R
+Developer Friendly Predictive Modelling with the `emil` Package for R
 =======================
 Christofer L Bäcklin, Mats G Gustafsson
 
 Original publication: TBA
 
-This repository contains all code examples and code used to perform the benchmarking test (section 4, figure #).
+This repository contains all code required to run the examples, benchmarking test, and producing the figures of the paper.
 
 System requirements
 -------------------
-The code is written for a Unix or Linux operating system with R version 3.0.1 or later, but can be modified to run under Windows fairly easily. The following packages are required, but installed automatically: `caret`, `data.table`, `doMC`, `glmnet`, `pamr`, `predict`, and `randomForest`.
+The code is written for a Unix or Linux operating system with R version 3.0.2 or later, but can be modified to run under Windows fairly easily. The following packages are required, but installed automatically: `BioBase`, `breastCancerUpp`, `caret`, `cforest`, `data.table`, `doMC`, `emil`, `GEOquery`, `glmnet`, `gtools`, `pamr`, `parallel`, and `randomForest`.
 
 Instructions
 ------------
 The most convenient way to run the analysis is to clone the repo to your computer and run the files as shown below (commands for unix/linux).
 
-    git clone git@github.com:Molmed/Nordlund-2013.git
+    git clone git@github.com:Molmed/Backlin-2014.git
     cd Backlin-2014
     R -f benchmark_setup.R
 
