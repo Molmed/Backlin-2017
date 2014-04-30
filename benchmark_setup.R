@@ -43,7 +43,7 @@ if(any(data.file.missing)){
 #------------------------------------o
 #   Setup the run
 
-run.folder <- "run_140329"
+run.folder <- "run_140417"
     #sprintf("run_%s", format(Sys.time(), "%y%m%d"))
 
 if(!file.exists(run.folder)){
@@ -55,7 +55,7 @@ if(!file.exists(run.folder)){
     setwd(run.folder)
 }
 
-for(d in c("runcontrol", "memstats", "results", "plots"))
+for(d in c("runcontrol", "memstats", "results"))
     dir.create(d, showWarnings=FALSE)
 
 

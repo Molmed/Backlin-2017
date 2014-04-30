@@ -13,7 +13,7 @@ nice.axis <- function(..., las = 1, lwd = par("lwd"), lwd.ticks = lwd, lend = 2)
     }
 }
 
-runs <- c("run_140325", "run_140329")
+runs <- c("run_140325", "run_140329", "run_140417")
 
 logs <- lapply(runs, function(r){
     l <- mixedsort(dir(paste0(r, "/memstats"), full.names=TRUE))

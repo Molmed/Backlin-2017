@@ -1,14 +1,6 @@
-# Temorary stuff
-source.all("~/Documents/R/egna paket/predict/predict/R/")
-source.all("~/private/predict/predict/R/")
-library(predict)
-library(foreach)
-library(survival)
 
-#--------------------------------------------------------------[ The real file ]
-
-# Install necessary CRAN packages
-required.pkg <- c("survival", "predict")
+# Install and load required packages
+required.pkg <- c("emil", "survival", "predict")
 installed.pkg <- sapply(required.pkg, require, character.only=TRUE)
 if(any(!installed.pkg)){
     install.packages(required.pkg[!installed.pkg])
@@ -26,8 +18,8 @@ y.train <- gl(2, 30, labels=c("class A", "class B"))
 x.test <- sweep(matrix(rnorm(60*10), 60), 1, rep(c(0,.8), each=30), "+")
 y.test <- gl(2, 30, labels=c("class A", "class B"))
 
-# Create and tuned a modelling procedure
-proc <- modelling.procedure(method="glmnet", param=list(alpha=0:4/4))
+# Create and tuned a modeling procedure
+proc <- modeling.procedure(method="glmnet", param=list(alpha=0:4/4))
 tuned.proc <- tune(proc, x.train, y.train)
 model <- fit(tuned.proc, x.train, y.train)
 
@@ -41,13 +33,15 @@ error.rate(y.test, pred)
 x.all <- rbind(x.train, x.test)
 y.all <- factor(c(y.train, y.test))
 ho <- resample.holdout(y.all, frac=.5, nfold=9)
-perf <- evaluate.modelling(proc, x.all, y.all, test.subset = ho)
+perf <- evaluate.modeling(proc, x.all, y.all, resample = ho)
 
-subtree(perf, TRUE, TRUE, "error")
+subtree(perf, 1:9, "error")
+mean(subtree(perf, 1:9, "error")
+subframe(perf, TRUE, "pred", "prob", 1, resample = ho)
 
 pdf("image-holdout.pdf", 5/cm(1), 10/cm(1))
 par(mar=c(3,3,.5,.5), ps=8, mgp=c(1.7, .7, 0), tcl=-.3)
-image(ho, gl(6, 10))
+image(ho, y.all)
 dev.off()
 
 
@@ -55,49 +49,40 @@ dev.off()
 #   Section 3.1: A parallelized simulation
 #-------------------------------------------------------------------------------
 
+# Set up the problem
 library(randomForest)
-set.seed(123)
 x <- matrix(rnorm(100*10000), 100, 10000)
 y <- gl(2, 50)
+cv <- resample.crossval(y, nfold=8, nrep=4)
 
-# Define an ordinary sequential random forest process
-proc <- modelling.procedure("randomForest", param=list(ntree=8000))
+# Evaluate the sequential solution
+proc <- modeling.procedure("randomForest", param = list(ntree = 8000))
+system.time(perf.seq <- evaluate.modeling(proc, x, y, resample = cv))
 
-# Define a parallelized processes by replacing the fitting function
+# Evaluate the standard parallel solution
+system.time(perf.par1 <- evaluate.modeling(proc, x, y, resample = cv,
+                                           .parallel.cores = 16))
+
+# Set up and evaluate the alternative parallel solution
 library(parallel)
 options(mc.cores = 16)
 parProc <- proc
 parProc$fit.fun <- function(..., ntree){
-    # Calculate how many trees each worker needs compute
+    # Calculate how many trees each core needs compute
     nc <- getOption("mc.cores")
     ntree <- table(findInterval(1:ntree-1, ntree/nc * 1:nc))
 
-    # Fit the workers' forests
+    # Fit the cores' forests
     forests <- mclapply(ntree, function(nt) randomForest(..., ntree=nt))
 
-    # Combine the workers' forests into a single forest
+    # Combine the cores' forests into a single forest
     do.call(combine, forests)
 }
-
-cv <- resample.crossval(y, nfold=8, nrep=4)
-
-# Compare computation time
-system.time(perf.ser <- evaluate.modelling(proc, x, y, test.subset = cv))
-
-system.time(perf.par1 <- evaluate.modelling(parProc, x, y, test.subset = cv))
-#     user   system  elapsed 
-# 6618.851   33.675  617.991 
-system.time(perf.par2 <- mclapply(cv, function(fold)
-    evaluate.modelling(proc, x, y, test.subset = fold)))
-#     user   system  elapsed 
-# 3112.569    2.157  302.443 
-# Warning message:
-# In mclapply(cv, function(fold) evaluate.modelling(proc, x, y, test.subset = fold)) :
-#   all scheduled cores encountered errors in user code
+system.time(perf.par2 <- evaluate.modeling(parProc, x, y, resample = cv))
 
 
 #===============================================================================
-#   Section 3.2: Customized survival analysis modelling
+#   Section 3.2: Customized survival analysis modeling
 #-------------------------------------------------------------------------------
 
 # Install necessary bioconductor packages
@@ -106,6 +91,8 @@ installed.pkg <- sapply(required.pkg, require, character.only=TRUE)
 if(any(!installed.pkg)){
     source("http://bioconductor.org/biocLite.R")
     biocLite(required.pkg[!installed.pkg])
+    for(p in required.pkg[!installed.pkg])
+        require(p, character.only=TRUE)
 }
 
 # Load data
@@ -116,13 +103,13 @@ x <- t(exprs(upp))[sample.idx,]
 y <- with(pheno[sample.idx,],
           outcome(t.rfs, factor(e.rfs, levels=1, labels="relapse")))
 
-# Setup analysis
+# Set up method
 pre.pca <- function(x, y, fold){
-    pca <- prcomp(x[na.fill(!fold, FALSE),,drop=FALSE], scale.=TRUE)
+    pca <- prcomp(x[index.fit(fold),,drop=FALSE], scale.=TRUE)
     list(fit = pca$x,
-         test = predict(pca, x[na.fill(fold, FALSE),]))
+         test = predict(pca, x[index.test(fold),]))
 }
-proc <- modelling.procedure(
+proc <- modeling.procedure(
     fit.fun = function(x, y, nfeat){
         list(nfeat = nfeat,
              cox = coxph(as.Surv(y) ~ ., data.frame(x[, 1:nfeat, drop=FALSE])))
@@ -130,21 +117,24 @@ proc <- modelling.procedure(
     predict.fun = function(object, x)
         list(risk = predict(object$cox,
             data.frame(x[, 1:object$nfeat, drop=FALSE]), type="risk")),
-    param = list(nfeat = c(1, 2, 3, 5, 9, 15, 25)))
+    param = list(nfeat = c(1, 2, 3, 5, 9, 15, 25))
+)
 
-ho <- resample.holdout(y, frac=1/4, nrep=10)
 
 # Run
-set.seed(123)
-perf <- evaluate.modelling(proc, x, y, ho, pre.pca, .save=list(pred=TRUE, tuning=TRUE))
+ho <- resample.holdout(y, frac=1/4, nrep=10)
+perf <- evaluate.modeling(proc, x, y, resample = ho, pre.process = pre.pca,
+                          .save=list(pred=TRUE, tuning=TRUE))
 
 # Present results
-subtree(perf, T, T, "error")
+error <- subtree(perf, T, "error")
+all.tuning.errors <- subtree(perf, T, "tuning", "error")
+mean.tuning.errors <- sapply(all.tuning.errors, apply, 1, mean)
 
 # Plots tuning performance of the folds
-mean.err <- sapply(subtree(perf, T, T, "tuning", "error"), apply, 1, mean)
-matplot(unlist(proc$tuning$param), -mean.err, type="l", lty=1,
-        xlab="Number of PCA components", ylab="Mean Harrell's C")
+matplot(unlist(proc$tuning$param), -mean.tuning.errors, type="l", lty=1, las=1,
+        col="grey", xlab="Number of PCA components", ylab="Mean Harrell's C")
+lines(unlist(proc$tuning$param), -apply(mean.tuning.errors, 1, mean), lwd=2)
 dev.off()
 
 
@@ -152,20 +142,16 @@ dev.off()
 #   Section 3.3: Methylation based subtyping
 #-------------------------------------------------------------------------------
 
+# Load or download data
 if(file.exists("data/all_methylation.Rdata")){
     load("data/all_methylation.Rdata")
 } else {
     source("download_methylation.R")
 }
+y <- factor(ifelse(all.pheno$subtype %in% c("T-ALL", "t(12;21)", "HeH"),
+                   as.character(all.pheno$subtype), "other"))
 
-y <- factor(all.pheno$subtype, levels=c("T-ALL", "t(12;21)", "HeH"))
-all.met <- all.met[!is.na(y),]
-y <- y[!is.na(y)]
-
-proc <- modelling.procedure("pamr")
-cv <- resample.crossval(y, 5, 1)
-
-# Pre-calculate the distance matirx, to avoid recalculating it in every fold
+# Pre-calculate distance matrix for kNN-imputation
 if(file.exists("data/all_dist.Rdata")){
     load("data/all_dist.Rdata")
 } else {
@@ -173,19 +159,24 @@ if(file.exists("data/all_dist.Rdata")){
     save(all.dist, file="data/all_dist.Rdata")
 }
 
-# Setup memory tracking
-tracemem(all.met)
-my.pre.process <- function(...){
-    x <- pre.pamr(..., pre.process=pre.impute.knn, distmat=all.dist)
-    trace.msg(4, tracemem(x))
-    x
+# Set up tracing pre-processing functions
+tracing.pre.impute.knn <- function(...){
+    sets <- pre.impute.knn(..., k=10, distmat=all.dist)
+    cat("Imputed training set:", tracemem(sets$fit), "\n")
+    cat("Imputed test set:",     tracemem(sets$test), "\n")
+    return(sets)
+}
+tracing.pre.pamr <- function(...){
+    sets <- pre.pamr(..., pre.process=tracing.pre.impute.knn)
+    cat("Re-oriented training set:", tracemem(sets$fit$x), "\n")
+    cat("Re-oriented test set:",     tracemem(sets$test), "\n")
+    return(sets)
 }
 
-# Execute modelling
-pred <- evaluate.modelling(proc, all.met, y, test.subset=cv,
-                           pre.process=my.pre.process)
-
-sets <- pre.pamr(all.met, y, cv[[1]])
-ff <- fit(proc, sets$fit)
-proc$predict.fun(ff[[1]], sets$test)
+# Execute modeling
+proc <- modeling.procedure("pamr")
+ho <- resample.holdout(y, frac = 1/4, nfold = 1)
+cat("Complete data set:", tracemem(all.met), "\n")
+pred <- evaluate.modeling(proc, all.met, y, test.subset=ho,
+                          pre.process=tracing.pre.pamr)
 
