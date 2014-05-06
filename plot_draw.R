@@ -1,5 +1,13 @@
+
+#--------------------------------------------------------------[ Choose device ]
+
+# Uncomment any of these lines to draw plot in a window instead of a pdf/png
 #X11(, 14/cm(1), 21/cm(1)) # For portrait
 #X11(, 21/cm(1), 14/cm(1)) # For landscape
+
+
+#------------------------------------------------------------------[ Draw plot ]
+
 pal <- cbind(
     caret = hsv(seq(1/6, 0, len=7), .5, seq(.9, .8, length.out=7)),
     predict = hsv(seq(1/6, .5, len=7), .5, seq(.9, .8, length.out=7))
@@ -26,10 +34,10 @@ if(orientation == "portrait"){
 par(cex=1, ps=8, mar=c(1.3, 3.2, 1.5, 2.3), oma=c(1,1,1,0),
     las=1, tcl=-.3, mgp=c(1,.3,0))
 
-time.ticks <- log10(c(s=1:12*5, min=1:12*5*60, h=1:4*5*60^2))
+time.ticks <- log10(c(1, s=1:12*5, min=1:12*5*60, h=1:4*5*60^2))
 time.labels <- rep(NA, length(time.ticks))
-time.labels[time.ticks %in% log10(c(10, 15, 60, 5*60, 60^2, 5*60^2))] <-
-    c("10 s", "15 s", paste(c(1,5), rep(c("min", "h"), each=2)))
+time.labels[time.ticks %in% log10(c(1, 10, 15, 60, 5*60, 60^2, 5*60^2))] <-
+    c("1s", "10 s", "15 s", paste(c(1,5), rep(c("min", "h"), each=2)))
 
 mem.ticks <- log10(1:9*10^rep(3:8, each=9))
 mem.labels <- rep(NA, length(mem.ticks))
@@ -41,8 +49,7 @@ for(a in levels(mems$algorithm)[3:1]){
     counter <- counter + 1
     if(nrow(mems[algorithm == a]) > 0){
         xl <- range(mems[algorithm == a, time])
-        yl <- #log10(c(50e3, 30e6))
-              extend(range(mems[algorithm == a, mem]), .2)
+        yl <- extend(range(mems[algorithm == a, mem]), .1)
         tt <- ifelse(findInterval(time.ticks, xl) == 1, time.ticks, NA)
         mt <- ifelse(findInterval(mem.ticks, yl) == 1, mem.ticks, NA)
     }
@@ -59,7 +66,8 @@ for(a in levels(mems$algorithm)[3:1]){
 
                         if(!all(runs.completed[algorithm == a & dimension == d, completed])){
                             for(r in seq_along(runs)){
-                                with(mems[algorithm == a & framework == f & dimension == d & replicate == r],
+                                m <- mems[algorithm == a & framework == f & dimension == d & replicate == r]
+                                if(nrow(m) > 0) with(m,
                                      points(approx(time, mem,
                                             log10(60*fold.start.times[[r]][[paste(f, a, d, sep="_")]][-1])),
                                     pch="|", col=pal[as.character(d), f], cex=.7))
@@ -92,7 +100,7 @@ for(a in levels(mems$algorithm)[3:1]){
             }
             hlines(mt, col=c("#00000022", "#00000011")[1+is.na(mem.labels)])
             axis(2, mt, mem.labels, lwd=0)
-            vlines(log10(c(60, 10*60, 60*60, 10*60*60)), col=rep(c("#00000011")), lty=1)
+            vlines(log10(c(10, 60, 10*60, 60*60, 10*60*60)), col=rep(c("#00000011")), lty=1)
             nice.axis(1, time.ticks, time.labels)
 
             tmp <-merge(mems[framework == f & algorithm == a,

@@ -1,6 +1,10 @@
 #!/usr/bin/Rscript
 # Run this script in the repo root
 
+# This is the folder to which all results are saved
+run.folder <- "run1"
+
+
 #------------------------------------o
 #   Install packages
 
@@ -43,9 +47,6 @@ if(any(data.file.missing)){
 #------------------------------------o
 #   Setup the run
 
-run.folder <- "run_140417"
-    #sprintf("run_%s", format(Sys.time(), "%y%m%d"))
-
 if(!file.exists(run.folder)){
     dir.create(run.folder)
     setwd(run.folder)
@@ -79,6 +80,7 @@ runs <- data.table(
 )
 runs$name <- with(runs, sprintf("%s_%s_%i", framework, algorithm, dimension))
 runs$id <- gsub("([a-zA-Z])[a-zA-Z]*_", "\\1", runs$name)
+runs$mem.interval <- ifelse(runs$algorithm == "pamr", 1, 10)
 
 # Remove all runs that have been completed
 runs <- runs[!paste0(name, ".Rdata") %in% dir("results")]
@@ -100,7 +102,7 @@ batch.script <- with(runs, paste0("#!/bin/sh -l
 #SBATCH --output=runcontrol/",name,".out
 #SBATCH --error=runcontrol/",name,".err
 
-./catmem.sh ",name," &
+./catmem.sh ",name," ",mem.interval," &
 R -f benchmark.R --vanilla --args ",framework," ",algorithm," ",dimension,"
 "))
 

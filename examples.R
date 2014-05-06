@@ -24,7 +24,7 @@ tuned.proc <- tune(proc, x.train, y.train)
 model <- fit(tuned.proc, x.train, y.train)
 
 # Predict the response of the test set
-pred <- proc$predict.fun(model, x.test)
+pred <- predict(proc, model, x.test)
 
 # Calculate the error
 error.rate(y.test, pred)

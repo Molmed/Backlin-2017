@@ -21,12 +21,13 @@ pre.proc <- pre.split
 if(framework == "caret"){
     levels(y) <- gsub("\\W", "", levels(y))
 
-    cv.control <- trainControl(method = "repeatedcv",
-                               number = attr(cv[[1]], "nfold"),
-                               repeats = attr(cv[[1]], "nrep"),
-                               returnData = FALSE,
-                               verboseIter = TRUE,
-                               allowParallel = algorithm == "randomForest")
+    cv.control <- trainControl(
+        method = if(algorithm == "pamr") "none" else "repeatedcv",
+        number = attr(cv[[1]], "nfold"),
+        repeats = attr(cv[[1]], "nrep"),
+        returnData = FALSE,
+        verboseIter = TRUE,
+        allowParallel = algorithm == "randomForest")
 
     params <- switch(algorithm,
         glmnet = list(method = "glmnet", nlambda=30),
@@ -43,7 +44,7 @@ if(framework == "caret"){
         randomForest = data.frame(.mtry = floor(ncol(x)^(2/3:5)))
     )
 
-    proc <- modelling.procedure("caret", param = c(params,
+    proc <- modeling.procedure("caret", param = c(params,
         list(trControl = list(cv.control), tuneGrid = list(paramGrid))))
 
     if(algorithm == "glmnet"){
@@ -59,15 +60,8 @@ if(framework == "caret"){
         registerDoMC(16)
     }
 
-    #proc$predict.fun <- 
-    #model <- fit(proc, x, y)
-    #pred <- predict(model[[1]], x)
-
-    #model <- train(x, y, "rf", trControl=trainControl(verboseIter = TRUE, returnData=FALSE))
-    #model <- randomForest(x, y)
-
 } else if(framework == "predict"){
-    proc <- modelling.procedure(
+    proc <- modeling.procedure(
         method = algorithm,
         param = switch(algorithm,
             glmnet = list(alpha = 0:4/4, nlambda=30),
@@ -91,7 +85,7 @@ if(framework == "caret"){
 }
 
 computation.time <- system.time(
-    result <- evaluate.modelling(proc, x, y, pre.process=pre.proc, test.subset=cv)
+    result <- evaluate.modeling(proc, x, y, pre.process=pre.proc, resample=cv)
 )
 
 save(computation.time, result,

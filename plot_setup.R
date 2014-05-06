@@ -1,10 +1,21 @@
+
+#----------------------------------------------------------------[ Choose runs ]
+
+# Paths to run folders
+runs <- c("run_140325", "run_140329", "run_140417")
+
+
+#------------------------------------------------------------------[ Load data ]
+
 require(emil)
 require(gtools)
 require(data.table)
 
+extend <- function(x, inc=.04)
+    x + c(-1, 1)*diff(x)*inc
 nice.axis <- function(..., las = 1, lwd = par("lwd"), lwd.ticks = lwd, lend = 2){
     axis(..., las = las, lwd = 0, lwd.ticks = lwd.ticks, lend = 1)
-    if (lwd) {
+    if(lwd) {
         args <- c(list(...), list(lwd = lwd, lwd.ticks = 0, lend = lend))
         args$labels <- FALSE
         do.call(axis, args)
@@ -15,7 +26,6 @@ vlines <- function (x, lend = 1, ...)
 hlines <- function (y, lend = 1, ...)
     segments(par("usr")[1], y, par("usr")[2], y, lend = lend, ...)
 
-runs <- c("run_140325", "run_140329", "run_140417")
 
 logs <- lapply(runs, function(r){
     l <- mixedsort(dir(paste0(r, "/memstats"), full.names=TRUE))
@@ -37,10 +47,9 @@ mems <- lapply(logs, function(l) do.call(rbind, lapply(l, function(f){
                algorithm = factor(algorithm, levels=c("glmnet", "pamr", "randomForest")),
                dimension = as.integer(sub("^.*?(\\d+).*$", "\\1", f)),
                time=log10(time),
-               mem=#log10(mem)
-                   cummax(log10(mem))
+               mem=cummax(log10(mem))
     )
-}))
+})))
 runs.completed <- lapply(logs, function(l) data.table(
     framework = sub(".*(caret|predict).*", "\\1", l),
     algorithm = sub(".*(glmnet|pamr|randomForest).*", "\\1", l),
@@ -63,4 +72,6 @@ for(r in seq_along(mems)){
 }
 mems <- do.call(rbind, mems)
 runs.completed <- do.call(rbind, runs.completed)
+
+# Now source `plot_draw.R`
 
