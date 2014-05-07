@@ -1,4 +1,4 @@
-Developer Friendly Predictive Modeling with the `emil` Package for R
+Developer friendly and computationally efficient predictive modeling without information leakage: The `emil` package for R
 =======================
 Christofer L Bäcklin, Mats G Gustafsson
 
