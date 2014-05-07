@@ -70,7 +70,7 @@ sec2time <- function(x){
             x %% (24*60*60) %/% (60*60), x %% (60*60) %/% 60, x %% 60)
 }
 runs <- data.table(
-    framework = gl(2, length(n.feat)*3, labels=c("caret", "predict")),
+    framework = gl(2, length(n.feat)*3, labels=c("caret", "emil")),
     algorithm = gl(3, length(n.feat), labels=c("glmnet", "pamr", "randomForest")),
     dimension = n.feat,
     max.time = sec2time(60*60*c(1+23*n.feat/10000,

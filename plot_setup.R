@@ -2,7 +2,7 @@
 #----------------------------------------------------------------[ Choose runs ]
 
 # Paths to run folders
-runs <- c("run_140325", "run_140329", "run_140417")
+runs <- c("run1", "run2", "run3")
 
 
 #------------------------------------------------------------------[ Load data ]
@@ -42,8 +42,8 @@ mems <- lapply(logs, function(l) do.call(rbind, lapply(l, function(f){
         as.integer(sub("^.*?(\\d+) kB$", "\\1", tab[seq(3, length(tab), by=44)]))
     mem <- pmax(mem[-1] - mem[1], 1)
     algorithm <- sub("^.*(glmnet|pamr|randomForest).*$", "\\1", f)
-    data.table(framework = factor(sub("^.*(caret|predict).*$", "\\1", f),
-                                  levels=c("caret", "predict")),
+    data.table(framework = factor(sub("^.*(caret|emil).*$", "\\1", f),
+                                  levels=c("caret", "emil")),
                algorithm = factor(algorithm, levels=c("glmnet", "pamr", "randomForest")),
                dimension = as.integer(sub("^.*?(\\d+).*$", "\\1", f)),
                time=log10(time),
@@ -51,7 +51,7 @@ mems <- lapply(logs, function(l) do.call(rbind, lapply(l, function(f){
     )
 })))
 runs.completed <- lapply(logs, function(l) data.table(
-    framework = sub(".*(caret|predict).*", "\\1", l),
+    framework = sub(".*(caret|emil).*", "\\1", l),
     algorithm = sub(".*(glmnet|pamr|randomForest).*", "\\1", l),
     dimension = as.integer(sub("^.*?(\\d+).*$", "\\1", l)),
     completed = sub("^.*/(.*)\\.log$", "\\1.Rdata", l) %in%

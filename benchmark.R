@@ -4,7 +4,7 @@ arg <- commandArgs()
 arg <- arg[-(1:which(arg == "--args"))]
 
 framework <- arg[1]
-stopifnot(framework %in% c("caret", "predict"))
+stopifnot(framework %in% c("caret", "emil"))
 require(caret)
 require(emil)
 require(class)
@@ -60,7 +60,7 @@ if(framework == "caret"){
         registerDoMC(16)
     }
 
-} else if(framework == "predict"){
+} else if(framework == "emil"){
     proc <- modeling.procedure(
         method = algorithm,
         param = switch(algorithm,

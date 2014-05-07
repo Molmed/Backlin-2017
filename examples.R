@@ -32,7 +32,7 @@ error.rate(y.test, pred)
 # Do all of the above in a resampled version
 x.all <- rbind(x.train, x.test)
 y.all <- factor(c(y.train, y.test))
-ho <- resample.holdout(y.all, frac=.5, nfold=9)
+ho <- resample("holdout", y.all, frac=.5, nfold=9)
 perf <- evaluate.modeling(proc, x.all, y.all, resample = ho)
 
 subtree(perf, 1:9, "error")
@@ -53,7 +53,7 @@ dev.off()
 require(randomForest)
 x <- matrix(rnorm(100*10000), 100, 10000)
 y <- gl(2, 50)
-cv <- resample.crossval(y, nfold=8, nrep=4)
+cv <- resample("crossval", y, nfold=8, nrep=4)
 
 # Evaluate the sequential solution
 proc <- modeling.procedure("randomForest", param = list(ntree = 8000))
@@ -122,7 +122,7 @@ proc <- modeling.procedure(
 
 
 # Run
-ho <- resample.holdout(y, frac=1/4, nrep=10)
+ho <- resample("holdout", y, frac=1/4, nrep=10)
 perf <- evaluate.modeling(proc, x, y, resample = ho, pre.process = pre.pca,
                           .save=list(pred=TRUE, tuning=TRUE))
 
@@ -175,8 +175,8 @@ tracing.pre.pamr <- function(...){
 
 # Execute modeling
 proc <- modeling.procedure("pamr")
-ho <- resample.holdout(y, frac = 1/4, nfold = 1)
+ho <- resample("holdout", y, frac = 1/4, nfold = 1)
 cat("Complete data set:", tracemem(all.met), "\n")
-pred <- evaluate.modeling(proc, all.met, y, test.subset=ho,
+pred <- evaluate.modeling(proc, all.met, y, resample=ho,
                           pre.process=tracing.pre.pamr)
 

@@ -10,7 +10,7 @@
 
 pal <- cbind(
     caret = hsv(seq(1/6, 0, len=7), .5, seq(.9, .8, length.out=7)),
-    predict = hsv(seq(1/6, .5, len=7), .5, seq(.9, .8, length.out=7))
+    emil = hsv(seq(1/6, .5, len=7), .5, seq(.9, .8, length.out=7))
 )
 rownames(pal) <- sort(unique(mems$dimension))
 orientation <- c("portrait", "landscape")[1]
@@ -78,13 +78,13 @@ for(a in levels(mems$algorithm)[3:1]){
             }
 
             if(counter == 1){
-                mtext(c(caret="caret", predict="emil")[f],
+                mtext(f,
                     c(portrait=3, landscape=2)[orientation],
                     c(portrait=.6, landscape=3.1)[orientation],
                     cex=par("cex"), las=0, font=2)
             }
             if((orientation == "portrait" && counter == 3) ||
-               (orientation == "landscape" && f == "predict"))
+               (orientation == "landscape" && f == "emil"))
                 mtext("Computation time", 1, 1.3, cex=par("cex"))
             if((orientation == "portrait" && f == "caret") ||
                (orientation == "landscape" && counter == 1))
@@ -126,5 +126,5 @@ df <- mems[, list(mem=exp(tail(mem,1)), time=exp(tail(time,1))),
 df.r <- dcast.data.table(df[algorithm == "randomForest"], dimension + replicate ~ framework, value.var = "mem")
 df.p <- dcast.data.table(df[algorithm == "pamr"], dimension + replicate ~ framework, value.var = "time")
 
-df.r[,list(mem.diff = mean(predict/caret)), by=dimension]
-df.p[,list(time.diff = mean(predict/caret)), by=dimension]
+df.r[,list(mem.diff = mean(emil/caret)), by=dimension]
+df.p[,list(time.diff = mean(emil/caret)), by=dimension]
