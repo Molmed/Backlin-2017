@@ -4,3 +4,5 @@ plots
 results
 runcontrol
 *.Rdata
+*.out
+run_*
