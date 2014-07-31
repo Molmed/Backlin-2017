@@ -18,4 +18,4 @@ The most convenient way to run the analysis is to clone the repo to your compute
     cd Backlin-2014
     R -f benchmark_setup.R
 
-The file `examples.R` contain the code examples presented in the paper.
+The code examples of section 2 and 3 of the paper can be found in the script `examples.R`.

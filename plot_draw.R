@@ -1,19 +1,30 @@
+#!/usr/bin/Rscript
 
-#--------------------------------------------------------------[ Choose device ]
+#===============================================================================
+#   This script exports a plot of the benchmarking results.
+#   Note that `plot_setup.R` must be run before this script can be executed.
+#-------------------------------------------------------------------------------
 
-# Uncomment any of these lines to draw plot in a window instead of a pdf/png
-#X11(, 14/cm(1), 21/cm(1)) # For portrait
-#X11(, 21/cm(1), 14/cm(1)) # For landscape
+orientation <- c("portrait", "landscape")[1]
+export.to.file <- TRUE
+
+if(!export.to.file){
+    if(orientation == "portrait"){
+        X11(, 14/cm(1), 21/cm(1))
+    } else {
+        X11(, 21/cm(1), 14/cm(1))
+    }
+}
 
 
 #------------------------------------------------------------------[ Draw plot ]
 
+# Color palette
 pal <- cbind(
     caret = hsv(seq(1/6, 0, len=7), .5, seq(.9, .8, length.out=7)),
     emil = hsv(seq(1/6, .5, len=7), .5, seq(.9, .8, length.out=7))
 )
 rownames(pal) <- sort(unique(mems$dimension))
-orientation <- c("portrait", "landscape")[1]
 
 # Set up device
 if(names(dev.cur()) %in% c("X11", "X11cairo", "quartz")){
@@ -115,16 +126,6 @@ for(a in levels(mems$algorithm)[3:1]){
 }
 par(new=TRUE, mar=rep(0, 4), oma=rep(0, 4), fig=c(0:1,0:1))
 plot(0, 0, type="n", axes=FALSE, ann=FALSE)
-#text(0, 0, "Preliminary", srt=60, col="#a0303012", cex=10)
 if(!names(dev.cur()) %in% c("X11", "X11cairo", "quartz"))
     dev.off()
 
-
-df <- mems[, list(mem=exp(tail(mem,1)), time=exp(tail(time,1))),
-           by=list(algorithm, framework, dimension, replicate)]
-
-df.r <- dcast.data.table(df[algorithm == "randomForest"], dimension + replicate ~ framework, value.var = "mem")
-df.p <- dcast.data.table(df[algorithm == "pamr"], dimension + replicate ~ framework, value.var = "time")
-
-df.r[,list(mem.diff = mean(emil/caret)), by=dimension]
-df.p[,list(time.diff = mean(emil/caret)), by=dimension]

@@ -1,5 +1,14 @@
 #!/usr/bin/Rscript
-# Run this script in the repo root
+
+#===============================================================================
+#   Benchmarking against the caret package
+#
+#   This script sets up and launches the benchmarking study on a slurm cluster,
+#   such as the Uppsala Multidisciplinary Center for Advanced Computational
+#   Science (UPPMAX) where it was originally run.
+#
+#   Run this script in the repo root.
+#-------------------------------------------------------------------------------
 
 # This is the folder to which all results are saved
 run.folder <- "run1"

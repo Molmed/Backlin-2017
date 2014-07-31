@@ -1,11 +1,14 @@
+#!/usr/bin/Rscript
 
-#----------------------------------------------------------------[ Choose runs ]
+#===============================================================================
+#   This script parses the data produced during the benchmarking.
+#   When completed `plot_draw.R` can be sourced to export it as an image file.
+#-------------------------------------------------------------------------------
 
 # Paths to run folders
-runs <- c("run_140325", "run_140329", "run_140417")
-
-
-#------------------------------------------------------------------[ Load data ]
+runs <- "run1"
+# Will in reality be something similar to this:
+# runs <- c("run_140325", "run_140329", "run_140417")
 
 require(emil)
 require(gtools)
@@ -72,6 +75,4 @@ for(r in seq_along(mems)){
 }
 mems <- do.call(rbind, mems)
 runs.completed <- do.call(rbind, runs.completed)
-
-# Now source `plot_draw.R`
 

@@ -1,4 +1,4 @@
-#!/opt/apps/R/3.0.1/bin/Rscript
+#!/usr/bin/Rscript
 
 #===============================================================================
 #   Download and import methylation into R
