@@ -1,8 +1,8 @@
-Developer friendly and computationally efficient predictive modeling without information leakage: The `emil` package for R
+Developer Friendly and Computationally Efficient Predictive Modeling without Information Leakage: The `emil` Package for R
 =======================
 Christofer L Bäcklin, Mats G Gustafsson
 
-Original publication: TBA
+Original publication in submission.
 
 This repository contains all code required to run the examples, benchmarking test, and producing the figures of the paper.
 
