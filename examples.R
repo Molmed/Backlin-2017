@@ -151,9 +151,13 @@ y <- with(pheno[sample.idx,],
 # Set up method
 pre.pca <- function(x, y, fold){
     pca <- prcomp(x[index.fit(fold), , drop = FALSE], scale. = TRUE)
-    list(fit = pca$x,
-         test = predict(pca, x[index.test(fold),]))
+    list(fit = list(x = pca$x,
+                    y = y[index.fit(fold)]),
+         test = list(x = predict(pca, x[index.test(fold), ]),
+                     y = y[index.test(fold)])
+    )
 }
+
 proc <- modeling.procedure(
     fit.fun = function(x, y, nfeat){
         list(nfeat = nfeat,
@@ -165,9 +169,8 @@ proc <- modeling.procedure(
     param = list(nfeat = c(1, 2, 3, 5, 9, 15, 25))
 )
 
-
 # Run
-ho <- resample("holdout", y, frac = .25, nrep = 10)
+ho <- resample("holdout", y, frac = .25, nfold = 10)
 perf <- evaluate.modeling(proc, x, y, resample = ho, pre.process = pre.pca,
                           .save = list(pred = TRUE, tuning = TRUE))
 
@@ -207,14 +210,14 @@ if(file.exists("data/all_dist.Rdata")){
 # Set up tracing pre-processing functions
 tracing.pre.impute.knn <- function(...){
     sets <- pre.impute.knn(..., k = 10, distmat = all.dist)
-    cat("Imputed training set:", tracemem(sets$fit), "\n")
-    cat("Imputed test set:",     tracemem(sets$test), "\n")
+    cat("Imputed training set:", tracemem(sets$fit$x), "\n")
+    cat("Imputed test set:",     tracemem(sets$test$x), "\n")
     return(sets)
 }
 tracing.pre.pamr <- function(...){
     sets <- pre.pamr(..., pre.process = tracing.pre.impute.knn)
     cat("Re-oriented training set:", tracemem(sets$fit$x), "\n")
-    cat("Re-oriented test set:",     tracemem(sets$test), "\n")
+    cat("Re-oriented test set:",     tracemem(sets$test$x), "\n")
     return(sets)
 }
 
