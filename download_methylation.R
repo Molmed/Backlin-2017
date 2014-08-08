@@ -33,6 +33,7 @@ options(stringsAsFactors=FALSE)
 
 #----------------------------------------------------------------[ Annotations ]
 
+dir.create("data")
 in.file <- "data/SupplementalTable1.txt.gz"
 if(!file.exists(in.file))
     download.file("http://genomebiology.com/imedia/6808530410895336/supp1.gz",

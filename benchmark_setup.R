@@ -42,7 +42,7 @@ if(any(data.file.missing)){
 
     sample.idx <- all.pheno$subtype %in% c("T-ALL", "HeH", "t(12;21)")
     y <- factor(all.pheno$subtype[sample.idx])
-    cv <- resample.crossval(y, 4, 4)
+    cv <- resample("crossval", y, 4, 4)
     save(sample.idx, y, cv, n.feat, file="data/common.Rdata")
 
     all.met <- all.met[sample.idx,1:max(n.feat)]
