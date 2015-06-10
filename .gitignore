@@ -6,3 +6,4 @@ runcontrol
 *.Rdata
 *.out
 run_*
+.Rhistory
