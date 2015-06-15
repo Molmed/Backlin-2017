@@ -8,3 +8,4 @@ runcontrol
 run_*
 .Rhistory
 output
+*.pdf

@@ -1,8 +1,8 @@
-source("pamr-setup.r")
+source("../get-geneexpression.r")
 library(caret)
 library(emil)
 
-cv <- resample("crossvalidation", y, nfold=5, nreplicate=3)
+cv <- replicate(3, createFolds(y, k = 5), simplify=FALSE)
 
 procedure <- modeling_procedure("caret",
     fit_fun = function(x, y, ...){
@@ -10,12 +10,14 @@ procedure <- modeling_procedure("caret",
         fit_caret(x=x, y=y, ...)
     },
     parameter = list(
-        method = "pam", 
-        tuneLength = 3,
+        method = "rpart2",
+        preProcess = "pca",
+        grid = expand.grid(maxdepth = c(2,3,5)),
         trControl = list(trainControl(
             method = "repeatedcv",
             number = 5,
             repeats = 3,
+            preProcOptions = list(pcaComp = 20),
             returnData = FALSE
         ))
     )

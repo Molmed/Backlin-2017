@@ -12,13 +12,13 @@ setwd(basedir)
 jobs <- data.frame(input = dir(recursive=TRUE)) %>%
     dplyr::filter(grepl("^[^/]+/[^/]+.r$", input))
 jobs <- expand.grid(input = jobs$input, replicate=1:5) %>%
-    extract(input, c("dir", "input", "task", "method"),
-            "^([^/]+)/((\\w+)-([^/]+).r)$") %>%
+    extract(input, c("task", "input", "method"),
+            "^([^/]+)/(\\w+-([^/]+).r)$") %>%
     mutate(title = sprintf("%s-%s-%i", task, method, replicate)) %>%
     mutate(output = sprintf("output/%s.ps.log", title))
 
-jobs <- jobs[jobs$task != "rf",]
-jobs <- jobs[jobs$method == "emil-caret",]
+jobs <- jobs[jobs$task != "rf-parallelization",]
+jobs <- jobs[jobs$method != "caret-custom",]
 
 #--------------------------------------------------------------------[ Execute ]
 

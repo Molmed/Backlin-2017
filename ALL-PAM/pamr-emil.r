@@ -1,4 +1,4 @@
-source("pamr-setup.r")
+source("../get-geneexpression.r")
 library(emil)
 
 cv <- resample("crossvalidation", y, nfold=5, nreplicate=3)
@@ -7,7 +7,7 @@ procedure <- modeling_procedure("pamr",
         gc()
         fit_pamr(...)
     },
-    parameter = list(n.threshold=3)
+    parameter = list(n.threshold=10)
 )
 
 result <- evaluate(procedure, x, y, resample=cv,

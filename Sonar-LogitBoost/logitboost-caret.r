@@ -1,4 +1,4 @@
-source("logitboost-setup.r")
+source("../get-sonar.r")
 library(caret)
 
 lbFuncs <- list(
@@ -44,12 +44,12 @@ fitControl <- trainControl(method = "repeatedcv",
 
 inTraining <- createDataPartition(Sonar$Class, p = .75, list = FALSE)
 training <- Sonar[ inTraining,]
-testing  <- Sonar[-inTraining,]
-
 model <- train(Class ~ ., data = training,
                method = lbFuncs,
                tuneLength = 3,
                trControl = fitControl)
+
+testing  <- Sonar[-inTraining,]
 prediction <- predict(model, testing)
 
 Sys.sleep(3)

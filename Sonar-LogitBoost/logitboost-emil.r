@@ -1,6 +1,5 @@
-source("logitboost-setup.r")
+source("../get-sonar.r")
 library(emil)
-
 
 fit_LogitBoost <- function(x, y, nIter=ncol(x), ...){
     nice_require("caTools")

@@ -1,4 +1,4 @@
-source("logitboost-setup.r")
+source("../get-sonar.r")
 library(caret)
 library(emil)
 

@@ -1,4 +1,4 @@
-source("pamr-setup.r")
+source("../get-geneexpression.r")
 library(caret)
 
 cv <- replicate(3, createFolds(y, k = 5), simplify=FALSE)
@@ -7,8 +7,8 @@ trControl <- trainControl(
     method = "repeatedcv",
     number = 5,
     repeats = 3,
-    returnData = FALSE,
-    allowParallel = FALSE)
+    preProcOptions = list(pcaComp = 20),
+    returnData = FALSE)
 
 for(i in seq_along(cv)){
     for(j in 2:length(cv[[i]])){
@@ -16,8 +16,9 @@ for(i in seq_along(cv)){
         trainIndex <- unlist(cv[[i]][-c(1,j)])
         testIndex <- cv[[i]][[j]]
         model <- train(x[trainIndex,], y[trainIndex],
-                       method = "pam",
-                       tuneLength = 3,
+                       method = "rpart2",
+                       preProcess = "pca",
+                       grid = expand.grid(maxdepth = c(2,3,5)),
                        trControl = trControl)
         prediction <- predict(model, x[testIndex,])
         error[i, j-1] <- 1 - postResample(prediction, y[testIndex])["Accuracy"]
