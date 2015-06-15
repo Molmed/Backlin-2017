@@ -14,6 +14,5 @@ result <- evaluate(procedure, x, y, resample=cv,
                    pre_process = list(pre_split, pre_pamr),
                    .save=c(model=FALSE, prediction=FALSE, importance=FALSE))
 
-cat("job completed\n")
 Sys.sleep(3)
 

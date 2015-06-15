@@ -2,12 +2,13 @@
 
 #----------------------------------------------------------------------[ Setup ]
 
+basedir <- getwd()
 library(dplyr)
 library(ggplot2)
 library(tidyr)
 
-basedir <- getwd()
 
+setwd(basedir)
 jobs <- data.frame(input = dir(recursive=TRUE)) %>%
     dplyr::filter(grepl("^[^/]+/[^/]+.r$", input))
 jobs <- expand.grid(input = jobs$input, replicate=1:5) %>%
@@ -16,6 +17,8 @@ jobs <- expand.grid(input = jobs$input, replicate=1:5) %>%
     mutate(title = sprintf("%s-%s-%i", task, method, replicate)) %>%
     mutate(output = sprintf("output/%s.ps.log", title))
 
+jobs <- jobs[jobs$task != "rf",]
+jobs <- jobs[jobs$method == "emil-caret",]
 
 #--------------------------------------------------------------------[ Execute ]
 
@@ -88,7 +91,7 @@ tab_setup <- tab %>%
 tab2 <- mutate(tab, replicate = sprintf("r%i", replicate))
 tab2 <- select(tab2, task, method, replicate, ELAPSED, RSS)
 tab2 <- spread(tab2, replicate, RSS)
-tab2 <- gather(tab2, replicate, RSS, r1:r5)
+tab2 <- gather_(tab2, "replicate", "RSS", grep("^r\\d$", colnames(tab2), value=TRUE))
 tab2 <- mutate(tab2, title = sprintf("%s-%s-%i", task, method, replicate))
 
 done <- tab2 %>%
@@ -107,8 +110,7 @@ for(i in 1:nrow(tab2)){
 }
 
 tab3 <- tab2 %>% dplyr::filter(task != "rf") %>%
-    mutate(method = factor(method, c("caret", "caret-slim", "emil")),
-           task = factor(task, c("pamr", "logitboost"))) %>%
+    mutate(method = factor(method, c("caret", "caret-custom", "emil", "emil-caret"))) %>%
     group_by(ELAPSED, task, method) %>%
     summarize(RSS = mean(RSS))
 g <- ggplot(tab3[complete.cases(tab3),], aes(x = ELAPSED, y = RSS/1024, color=method)) +
@@ -116,9 +118,10 @@ g <- ggplot(tab3[complete.cases(tab3),], aes(x = ELAPSED, y = RSS/1024, color=me
     geom_line() +
     ylab("Memory (RSS) / MB") + xlab("Time / s") + 
     facet_wrap(~task, scales="free") + theme_bw(base_size=9) +
-    scale_colour_manual(values=c("#ff7f2a", "#00aa88", "#8d5fd3", "#bbbbbb"))
+    scale_colour_manual(values=c("#ff7f2a", "#00aa88", "#8d5fd3", "#444444")) +
+    theme(legend.position="right")
 
-cairo_pdf("benchmark.pdf", 14/cm(1), 5/cm(1))
+cairo_pdf("benchmark.pdf", 14/cm(1), 8/cm(1))
 print(g)
 dev.off()
 

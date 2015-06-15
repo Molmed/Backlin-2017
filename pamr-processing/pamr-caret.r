@@ -3,7 +3,13 @@ library(caret)
 
 cv <- replicate(3, createFolds(y, k = 5), simplify=FALSE)
 error <- matrix(NA, 3, 5)
-i <- j <- 2
+trControl <- trainControl(
+    method = "repeatedcv",
+    number = 5,
+    repeats = 3,
+    returnData = FALSE,
+    allowParallel = FALSE)
+
 for(i in seq_along(cv)){
     for(j in 2:length(cv[[i]])){
         gc()
@@ -11,13 +17,13 @@ for(i in seq_along(cv)){
         testIndex <- cv[[i]][[j]]
         model <- train(x[trainIndex,], y[trainIndex],
                        method = "pam",
-                       trControl = trainControl(returnData = FALSE))
+                       tuneLength = 3,
+                       trControl = trControl)
         prediction <- predict(model, x[testIndex,])
         error[i, j-1] <- 1 - postResample(prediction, y[testIndex])["Accuracy"]
         rm(trainIndex, testIndex, model, prediction)
     }
 }
-#trControl <- trainControl(method = "pam")
 
-cat("job completed\n")
 Sys.sleep(3)
+

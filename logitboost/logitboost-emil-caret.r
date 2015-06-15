@@ -41,32 +41,28 @@ lbFuncs <- list(
 
 procedure <- modeling_procedure(
     method = "caret",
-    parameter = list(method = lbFuncs,
-
-                     nIter = list(c(10, 20, 30))),
-    error_fun = function(...) error_rate(..., allow_rejection=TRUE)
+    predict_fun = function(object, x, ...){
+        predict_caret(object, x, ...)
+    },
+    parameter = list(
+        method = list(lbFuncs),
+        tuneLength = 3,
+        trControl = list(trainControl(
+            method = "repeatedcv",
+            number = 10,
+            repeats = 10
+        ))
+    )
 )
 
-fold <- resample(method="holdout", y=Sonar$Class, nfold=1, test_fraction=.25)[[1]]
+fold <- resample(method="holdout", y=Sonar$Class, nfold=1,
+                 test_fraction=.25)[[1]]
 
 result <- evaluate(procedure, Sonar, "Class", resample=fold,
                    pre_process = function(x, y, fold){
                        pre_split(x, y, fold) %>%
                        pre_convert(x_fun=as.matrix)
                    })
-fitControl <- trainControl(method = "repeatedcv",
-                           number = 10,
-                           repeats = 10)
-
-inTraining <- createDataPartition(Sonar$Class, p = .75, list = FALSE)
-training <- Sonar[ inTraining,]
-testing  <- Sonar[-inTraining,]
-
-model <- train(Class ~ ., data = training,
-               method = lbFuncs,
-               tuneLength = 3,
-               trControl = fitControl)
-prediction <- predict(model, testing)
 
 Sys.sleep(3)
 

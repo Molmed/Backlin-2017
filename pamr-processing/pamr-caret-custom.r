@@ -16,7 +16,6 @@ nsc$predict <- function(modelFit, newdata, preProc = NULL, submodels = NULL){
 
 cv <- replicate(3, createFolds(y, k = 5), simplify=FALSE)
 error <- matrix(NA, 3, 5)
-i <- j <- 2
 for(i in seq_along(cv)){
     for(j in 2:length(cv[[i]])){
         gc()
@@ -32,7 +31,6 @@ for(i in seq_along(cv)){
         rm(trainIndex, testIndex, model, prediction)
     }
 }
-#trControl <- trainControl(method = "pam")
 
 Sys.sleep(3)
 

@@ -7,3 +7,4 @@ runcontrol
 *.out
 run_*
 .Rhistory
+output

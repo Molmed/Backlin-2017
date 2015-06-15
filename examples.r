@@ -108,7 +108,16 @@ if(interactive()){
 
 
 #===============================================================================
-#   Section 2.5: Downstream analysis
+#   Section 2.5: Model interpretation
+#-------------------------------------------------------------------------------
+
+model <- fit(procedure = "lasso", x = prostate_split$fit$x,
+             y = prostate_split$fit$y)
+get_importance(model)
+
+
+#===============================================================================
+#   Section 2.6: Downstream analysis
 #-------------------------------------------------------------------------------
 
 subtree(result, TRUE, "error")
@@ -126,7 +135,7 @@ ggplot(internal_tuning, aes(x = Lambda, y = TuningRMSE, group = Fold)) +
 
 
 #===============================================================================
-#   Section 2.6: Model comparison
+#   Section 2.7: Model comparison
 #-------------------------------------------------------------------------------
 
 # Compare regression methods
@@ -161,8 +170,26 @@ comparison %>%
 
 
 #===============================================================================
-#   Section 2.7: Scalability
+#   Section 2.8: Scalability
 #-------------------------------------------------------------------------------
+
+library(parallel)
+cluster <- makeCluster(spec = 4)
+clusterExport(cluster, "prostate")
+result <- parLapply(cv, function(fold){
+    evaluate(procedure = "lasso",
+             x = prostate[1:8],
+             y = prostate$lpsa,
+             resample = fold,
+             pre_process = function(x, y, fold){
+                 pre_split(x, y, fold) %>%
+                 pre_scale %>%
+                 pre_convert(x_fun = as.matrix)
+             },
+             .cores = 8,
+             .checkpoint_dir = "/home/user/analysis")
+})
+
 
 #===============================================================================
 #   Section 3.1: A parallelized simulation
@@ -247,4 +274,50 @@ options(emil_max_indent = 4)
 ho <- resample("holdout", y, nfold=3, test_fraction = 1/4)
 result <- evaluate(procedure = pca_cox, x = x, y = y, resample = ho,
                    pre_process = list(pre_split, pre_cox_pca))
+
+
+#===============================================================================
+#   Section 3.3: Voter
+#-------------------------------------------------------------------------------
+
+fit_ensemble <- function(x, y, procedure_list){
+    samples <- resample("bootstrap", y, nfold = length(procedure_list))
+    Map(function(procedure, fold){
+        try(fit(procedure, x[index_fit(fold),], y[index_fit(fold)]),
+            silent=TRUE)
+    }, procedure_list, samples)
+}
+predict_ensemble <- function(object, x){
+    prediction <- lapply(object, function(model){
+        if(inherits(model, "model")){
+            data.frame(id = seq_len(nrow(x)),
+                       prediction = predict(model, x)$prediction)
+        } else {
+            NULL
+        }
+    })
+    vote <- do.call(rbind, prediction) %>%
+        count(id, prediction) %>%
+        spread(prediction, n)
+    vote[is.na(vote)] <- 0
+    n_model <- sum(sapply(object, inherits, "model"))
+    list(prediction = factor(apply(vote[-1], 1, which.max),
+                             levels = 2:ncol(vote)-1, 
+                             labels = colnames(vote)[-1]),
+         vote = as.data.frame(vote[-1]/n_model))
+}
+
+library(mlbench)
+data(Sonar)
+
+ensemble <- modeling_procedure(
+    method = "ensemble",
+    parameter = list(procedure = list(rep(c("lda", "qda", "rpart"), each=100)))
+)
+
+cv <- resample("crossvalidation", Sonar$Class, nreplicate = 3, nfold = 5)
+comparison <- evaluate(procedure = list("lda", "qda", "rpart", ensemble),
+                       x = Sonar, y = "Class", resample = cv)
+get_performance(comparison, format="long") %>%
+    ggplot(aes(x = method, y = error)) + geom_boxplot() + coord_flip()
 
