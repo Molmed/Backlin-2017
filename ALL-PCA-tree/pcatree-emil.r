@@ -1,7 +1,7 @@
 source("../get-geneexpression.r")
 library(emil)
 
-cv <- resample("crossvalidation", y, nfold=5, nreplicate=3)
+cv <- resample("crossvalidation", y, nfold=3, nreplicate=2)
 procedure <- modeling_procedure("rpart",
     fit_fun = function(...){
         gc()

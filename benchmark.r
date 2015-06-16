@@ -89,6 +89,8 @@ tab <- do.call(rbind, lapply(1:nrow(jobs), function(i){
     }, error = function(...) NULL)
 }))
 
+save(tab, file="tab.Rdata")
+
 # Visual inspection
 tab_summary <- tab %>%
     group_by(task, method, replicate) %>%

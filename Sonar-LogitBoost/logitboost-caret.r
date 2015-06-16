@@ -44,14 +44,13 @@ fitControl <- trainControl(method = "repeatedcv",
                            repeats = 10)
 
 inTraining <- createDataPartition(Sonar$Class, p = .75, list = FALSE)
-training <- Sonar[ inTraining,]
-model <- train(Class ~ ., data = training,
+model <- train(Class ~ ., data = Sonar,
                method = lbFuncs,
                tuneGrid = data.frame(nIter = c(10, 20, 30)),
-               trControl = fitControl)
+               trControl = fitControl,
+               subset = inTraining)
 
-testing  <- Sonar[-inTraining,]
-prediction <- predict(model, testing)
+prediction <- predict(model, Sonar[-inTraining,])
 
 Sys.sleep(3)
 
