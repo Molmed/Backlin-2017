@@ -17,12 +17,13 @@ for(i in seq_along(cv)){
         gc()
         trainIndex <- unlist(cv[[i]][-c(1,j)])
         testIndex <- cv[[i]][[j]]
-        model <- train(x[trainIndex,], y[trainIndex],
+        model <- train(x, y,
                        method = rf,
                        preProcess = "knnImpute",
-                       tuneGrid = expand.grid(mtry = floor(sqrt(ncol(x)))),
+                       tuneGrid = data.frame(mtry = floor(sqrt(ncol(x)))),
                        ntree = 100,
-                       trControl = trControl)
+                       trControl = trControl,
+                       subset = trainIndex)
         prediction <- predict(model, x[testIndex,])
         error[i, j-1] <- 1 - postResample(prediction, y[testIndex])["Accuracy"]
         rm(trainIndex, testIndex, model, prediction)

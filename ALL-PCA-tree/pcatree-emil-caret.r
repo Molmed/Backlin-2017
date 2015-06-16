@@ -2,7 +2,7 @@ source("../get-geneexpression.r")
 library(caret)
 library(emil)
 
-cv <- resample("crossvalidation", y, nreplicate = 3, nfolds = 5)
+cv <- resample("crossvalidation", y, nreplicate = 2, nfold = 3)
 
 procedure <- modeling_procedure("caret",
     fit_fun = function(x, y, ...){
@@ -15,8 +15,8 @@ procedure <- modeling_procedure("caret",
         grid = list(data.frame(maxdepth = c(2,3,5))),
         trControl = list(trainControl(
             method = "repeatedcv",
-            number = 5,
-            repeats = 3,
+            number = 3,
+            repeats = 2,
             preProcOptions = list(pcaComp = 20),
             returnData = FALSE
         ))
