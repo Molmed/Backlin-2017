@@ -6,7 +6,7 @@ procedure <- modeling_procedure(
     fit_fun = function(x, y, degree=1, scale=1, C=1){
         gc()
         nice_require("kernlab")
-        kernlab::ksvm(x = x, y = y,
+        kernlab::lssvm(x = x, y = y,
              kernel = kernlab::polydot(degree = degree,
                                        scale = scale,
                                        offset = 1),
@@ -18,8 +18,12 @@ procedure <- modeling_procedure(
     parameter = list(degree = 1:3)
 )
 
-cv <- resample("crossvalidation", y, nreplicate=2, nfold=3)
-result <- evaluate(procedure, x, y, resample=cv, .verbose=TRUE)
+cv <- resample("crossvalidation", y, nreplicate = 2, nfold = 3)
+result <- evaluate(procedure, x, y, resample = cv, .verbose = TRUE,
+    pre_process = function(x, y, fold){
+        pre_split(x = x, y = y, fold = fold) %>%
+        pre_convert(x_fun = as.matrix)
+    })
 
 Sys.sleep(3)
 

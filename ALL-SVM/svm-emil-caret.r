@@ -11,7 +11,7 @@ procedure <- modeling_procedure("caret",
     },
     parameter = list(
         method = "svmPoly",
-        tuneGrid = expand.grid(degree = 1:3, scale = 1, C = 1),
+        tuneGrid = list(data.frame(degree = 1:3, scale = 1, C = 1)),
         trControl = list(trainControl(
             method = "repeatedcv",
             number = 5,
@@ -22,7 +22,10 @@ procedure <- modeling_procedure("caret",
 )
 
 result <- evaluate(procedure, x, y, resample=cv,
-                   pre_process = pre_split,
+                   pre_process = function(x, y, fold){
+                       pre_split(x=x, y=y, fold=fold) %>%
+                       pre_convert(x_fun = as.matrix)
+                   },
                    .save=c(model=FALSE, prediction=FALSE, importance=FALSE))
 
 Sys.sleep(3)

@@ -46,7 +46,7 @@ procedure <- modeling_procedure(
     },
     parameter = list(
         method = list(lbFuncs),
-        tuneLength = 3,
+        tuneGrid = list(data.frame(nIter = c(10, 20, 30))),
         trControl = list(trainControl(
             method = "repeatedcv",
             number = 10,

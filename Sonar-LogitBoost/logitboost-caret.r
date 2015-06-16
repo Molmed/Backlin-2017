@@ -1,6 +1,7 @@
 source("../get-sonar.r")
 library(caret)
 
+
 lbFuncs <- list(
     library = "caTools",
     loop = function(grid) {
@@ -46,7 +47,7 @@ inTraining <- createDataPartition(Sonar$Class, p = .75, list = FALSE)
 training <- Sonar[ inTraining,]
 model <- train(Class ~ ., data = training,
                method = lbFuncs,
-               tuneLength = 3,
+               tuneGrid = data.frame(nIter = c(10, 20, 30)),
                trControl = fitControl)
 
 testing  <- Sonar[-inTraining,]
