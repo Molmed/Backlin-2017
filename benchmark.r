@@ -28,18 +28,20 @@ jobs <- expand.grid(input = jobs$input, replicate=1:5) %>%
 
 jobs <- jobs[jobs$task != "rf-parallelization",]
 jobs <- jobs[jobs$method != "caret-custom",]
+jobs <- jobs[jobs$method == "caret",]
 rownames(jobs) <- NULL
 
 
 #--------------------------------------------------------------------[ Execute ]
 
-for(i in order(jobs$task, jobs$replicate, sample(nrow(jobs)))){
+for(i in order(jobs$replicate, jobs$task, sample(nrow(jobs)))){
     setwd(sprintf("%s/%s", basedir, jobs$task[i]))
     if(!file.exists(jobs$output[i])){
         system(sprintf("../benchmark.sh %s %s", jobs$input[i], jobs$title[i]))
         files <- dir(".", "*.log")
         dir.create("output", showWarnings=FALSE)
         file.rename(files, sprintf("%s/%s", dirname(jobs$output[i]), files))
+        cat("---\n")
     }
 }
 
@@ -136,6 +138,8 @@ tab3 <- tab2 %>% dplyr::filter(task != "rf") %>%
 
 
 #--------------------------------------------------------------[ Make the plot ]
+
+library(scales)
 
 format_memory <- function(x){
     # Based on http://www.moeding.net/archives/32-Metric-prefixes-for-ggplot2-scales.html
