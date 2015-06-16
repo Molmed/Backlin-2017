@@ -7,5 +7,6 @@ runcontrol
 *.out
 run_*
 .Rhistory
-output
+*.log
 *.pdf
+*.tar.gz

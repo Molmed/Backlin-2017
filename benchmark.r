@@ -2,6 +2,14 @@
 
 #----------------------------------------------------------------------[ Setup ]
 
+required.pkg <- c("caTools", "kernlab", "rpart", "pamr", "randomForest")
+installed.pkg <- required.pkg %in% rownames(installed.packages())
+if(!all(installed.pkg)){
+    install.packages(required.pkg[!installed.pkg])
+}
+rm(required.pkg, installed.pkg)
+
+
 basedir <- getwd()
 library(dplyr)
 library(ggplot2)
@@ -19,27 +27,22 @@ jobs <- expand.grid(input = jobs$input, replicate=1:5) %>%
 
 jobs <- jobs[jobs$task != "rf-parallelization",]
 jobs <- jobs[jobs$method != "caret-custom",]
+rownames(jobs) <- NULL
 
 #--------------------------------------------------------------------[ Execute ]
 
-# To profile the RF-code we need sum up the memory usage of the master R process
-# and all subprocesses spawned by the multicore parallelization.
-# However, simply filtering on the process name will also capture this process
-# (and any other that may be running) so we'll delay the start of the jobs to be
-# able to dicern which PID belongs to to which process later.
-sys.sleep(4)
-
 for(i in order(jobs$task, jobs$replicate, sample(nrow(jobs)))){
-    setwd(sprintf("%s/%s", basedir, jobs$dir[i]))
+    setwd(sprintf("%s/%s", basedir, jobs$task[i]))
     if(!file.exists(jobs$output[i])){
-        system(sprintf("../benchmark.sh %s %s %s", jobs$input[i], jobs$title[i],
-                       if(jobs$task[i] == "rf") "y" else "n"))
+        system(sprintf("../benchmark.sh %s %s", jobs$input[i], jobs$title[i]))
         files <- dir(".", "*.log")
         dir.create("output", showWarnings=FALSE)
         file.rename(files, sprintf("%s/%s", dirname(jobs$output[i]), files))
     }
 }
 
+system("squeue | grep chrib | grep inter | cut -c 10-18 | xargs scancel")
+stop("Done!")
 
 #-----------------------------------------------------------------------[ Plot ]
 

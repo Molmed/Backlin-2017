@@ -2,12 +2,12 @@ source("../get-geneexpression.r")
 library(emil)
 
 procedure <- modeling_procedure(
-
     method = "randomForest",
-    fit_fun = function(x, y, mtry = floor(sqrt(ncol(x))), ntree = 500, ...){
+    fit_fun = function(x, y, mtry = floor(sqrt(ncol(x))), ntree, ...){
         gc()
         fit_randomForest(x, y, mtry = mtry, ntree = ntree, ...)
-    }
+    },
+    parameter = list(ntree = 100)
 )
 
 x_dist <- dist(x)

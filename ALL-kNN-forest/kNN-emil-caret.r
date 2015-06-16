@@ -2,7 +2,8 @@ source("../get-geneexpression.r")
 library(caret)
 library(emil)
 
-cv <- replicate(3, createFolds(y, k = 5), simplify=FALSE)
+cv <- resample("crossvalidation", y, nfold=5, nreplicate=3)
+
 trControl <- trainControl(
     method = "none",
     preProcOptions = list(k = 5),
@@ -18,9 +19,11 @@ procedure <- modeling_procedure("caret",
         fit_caret(x=x, y=y, ...)
     },
     parameter = list(
-        method = rf,
-        preProcess = "knn",
-        trControl = list(trControl),
+        method = list(rf),
+        preProcess = "knnImpute",
+        ntree = 100,
+        tuneGrid = list(data.frame(mtry = floor(sqrt(ncol(x))))),
+        trControl = list(trControl)
     )
 )
 

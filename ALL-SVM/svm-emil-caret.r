@@ -2,7 +2,7 @@ source("../get-geneexpression.r")
 library(caret)
 library(emil)
 
-cv <- replicate(3, createFolds(y, k = 5), simplify=FALSE)
+cv <- resample("crossvalidation", y, nfold=5, nreplicate=3)
 
 procedure <- modeling_procedure("caret",
     fit_fun = function(x, y, ...){

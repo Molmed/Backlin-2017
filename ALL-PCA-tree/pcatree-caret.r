@@ -18,7 +18,7 @@ for(i in seq_along(cv)){
         model <- train(x[trainIndex,], y[trainIndex],
                        method = "rpart2",
                        preProcess = "pca",
-                       grid = expand.grid(maxdepth = c(2,3,5)),
+                       grid = data.frame(maxdepth = c(2,3,5)),
                        trControl = trControl)
         prediction <- predict(model, x[testIndex,])
         error[i, j-1] <- 1 - postResample(prediction, y[testIndex])["Accuracy"]

@@ -19,9 +19,9 @@ for(i in seq_along(cv)){
         testIndex <- cv[[i]][[j]]
         model <- train(x[trainIndex,], y[trainIndex],
                        method = rf,
-                       pre_process = "knn",
+                       preProcess = "knnImpute",
                        tuneGrid = expand.grid(mtry = floor(sqrt(ncol(x)))),
-                       ntree = 500,
+                       ntree = 100,
                        trControl = trControl)
         prediction <- predict(model, x[testIndex,])
         error[i, j-1] <- 1 - postResample(prediction, y[testIndex])["Accuracy"]
