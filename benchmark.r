@@ -26,8 +26,8 @@ jobs <- expand.grid(input = jobs$input, replicate=1:5) %>%
     mutate(title = sprintf("%s-%s-%i", task, method, replicate)) %>%
     mutate(output = sprintf("output/%s.ps.log", title))
 
-jobs <- jobs[jobs$task != "rf-parallelization",]
-jobs <- jobs[jobs$method != "caret-custom",]
+jobs <- jobs[jobs$task == "ALL-PAM",]
+jobs <- jobs[jobs$method == "caret",]
 rownames(jobs) <- NULL
 
 
