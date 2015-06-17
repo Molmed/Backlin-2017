@@ -1,18 +1,25 @@
 source("../get-geneexpression.r")
 library(emil)
 
-cv <- resample("crossvalidation", y, nfold=5, nreplicate=3)
-procedure <- modeling_procedure("pamr",
+cv <- resample("crossvalidation", y, nreplicate = 3, nfold = 5)
+
+procedure <- modeling_procedure(
+    method = "pamr",
     fit_fun = function(...){
         gc()
         fit_pamr(...)
     },
-    parameter = list(n.threshold=10)
+    parameter = list(n.threshold = 10,
+                     threshold = list(0:9))
 )
 
-result <- evaluate(procedure, x, y, resample=cv,
-                   pre_process = list(pre_split, pre_pamr),
-                   .save=c(model=FALSE, prediction=FALSE, importance=FALSE))
+result <- evaluate(procedure, x, y, resample = cv,
+    pre_process = list(pre_split, pre_pamr),
+    .save = c(model = FALSE, prediction = FALSE, importance = FALSE, error = TRUE),
+    .verbose = TRUE
+)
+
+error <- get_performance(result)
 
 Sys.sleep(3)
 

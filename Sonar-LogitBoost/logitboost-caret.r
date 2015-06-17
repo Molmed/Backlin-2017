@@ -1,7 +1,6 @@
 source("../get-sonar.r")
 library(caret)
 
-
 lbFuncs <- list(
     library = "caTools",
     loop = function(grid) {
@@ -18,6 +17,7 @@ lbFuncs <- list(
         data.frame(nIter = 1 + ((1:len)*10))
     },
     fit = function(x, y, wts, param, lev, last, weights, classProbs, ...) {
+        gc()
         LogitBoost(as.matrix(x), y, nIter = param$nIter)
     },
     predict = function(modelFit, newdata, preProc = NULL, submodels = NULL){
@@ -39,15 +39,16 @@ lbFuncs <- list(
     sort = function(x) x
 )
 
-fitControl <- trainControl(method = "repeatedcv",
-                           number = 10,
-                           repeats = 10)
+trControl <- trainControl(
+    method = "repeatedcv",
+    repeats = 10,
+    number = 10)
 
 inTraining <- createDataPartition(Sonar$Class, p = .75, list = FALSE)
 model <- train(Class ~ ., data = Sonar,
                method = lbFuncs,
                tuneGrid = data.frame(nIter = c(10, 20, 30)),
-               trControl = fitControl,
+               trControl = trControl,
                subset = inTraining)
 
 prediction <- predict(model, Sonar[-inTraining,])
