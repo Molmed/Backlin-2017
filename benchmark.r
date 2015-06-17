@@ -25,10 +25,10 @@ jobs <- expand.grid(input = jobs$input, replicate=1:5) %>%
             "^([^/]+)/(\\w+-([^/]+).r)$") %>%
     mutate(title = sprintf("%s-%s-%i", task, method, replicate)) %>%
     mutate(output = sprintf("output/%s.ps.log", title))
-
 jobs <- jobs[jobs$task != "rf-parallelization",]
-jobs <- jobs[jobs$method != "caret-custom",]
-jobs <- jobs[jobs$method == "caret",]
+
+jobs <- jobs[jobs$method == "emil",]
+jobs <- jobs[jobs$task == "ALL-PCA-tree",]
 rownames(jobs) <- NULL
 
 
@@ -37,6 +37,7 @@ rownames(jobs) <- NULL
 for(i in order(jobs$replicate, jobs$task, sample(nrow(jobs)))){
     setwd(sprintf("%s/%s", basedir, jobs$task[i]))
     if(!file.exists(jobs$output[i])){
+        cat(format(Sys.time()), "\n")
         system(sprintf("../benchmark.sh %s %s", jobs$input[i], jobs$title[i]))
         files <- dir(".", "*.log")
         dir.create("output", showWarnings=FALSE)
@@ -89,7 +90,9 @@ tab <- do.call(rbind, lapply(1:nrow(jobs), function(i){
     }, error = function(...) NULL)
 }))
 
-save(tab, file="tab.Rdata")
+save(tab, file="tab_150617.Rdata")
+
+load("tab_150617.Rdata")
 
 # Visual inspection
 tab_summary <- tab %>%
@@ -168,6 +171,7 @@ ggplot(plot.data, aes(x = ISOdate(2000, 1, 1, 0) + ELAPSED,
         breaks = pretty_breaks(n=2)
     ) +
     scale_y_continuous(labels = format_memory) +
+    theme(legend.position="right")
     theme(legend.position=c(5/6, 1/4))
 
 cairo_pdf("benchmark.pdf", 16/cm(1), 8/cm(1))
