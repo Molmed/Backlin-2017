@@ -19,7 +19,7 @@ fit_LogitBoost <- function(x, y, nIter=ncol(x), ...){
         parameter = list(nIter = list(nIter))
     )
     if(length(nIter) > 1){
-        cv <- resample("crossvalidation", y, nreplicate = 10, nfold = 10)
+        cv <- resample("crossvalidation", y, nrepeat = 10, nfold = 10)
         result <- evaluate(inner_procedure, x, y, resample = cv,
                            .verbose = FALSE)
         error <- subtree(result, TRUE, "error")

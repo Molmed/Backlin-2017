@@ -3,7 +3,7 @@ source("../get-geneexpression.r")
 library(caret)
 library(emil)
 
-cv <- resample("crossvalidation", y, nreplicate = 3, nfold = 5)
+cv <- resample("crossvalidation", y, nrepeat = 3, nfold = 5)
 
 trControl <- trainControl(
     method = "none",
