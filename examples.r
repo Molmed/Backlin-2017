@@ -221,13 +221,15 @@ system.time(result_par1 <- evaluate(procedure = proc, x = x, y = y,
 library("parallel")
 options(mc.cores = 16)
 par_proc <- proc
-par_proc$fit_fun <- function(..., ntree){
+par_proc$fit_fun <- function(x, y, ntree, ...){
+    require(randomForest)
+
     # Calculate how many trees each core needs compute
     nc <- getOption("mc.cores")
     ntree <- table(findInterval(1:ntree - 1, ntree / nc * 1:nc))
 
     # Fit the cores' forests
-    forests <- mclapply(ntree, function(nt) randomForest(..., ntree = nt))
+    forests <- mclapply(ntree, function(nt) randomForest(x, y, ntree = nt, ...))
 
     # Combine the cores' forests into a single forest
     do.call(combine, forests)
@@ -340,4 +342,38 @@ comparison <- evaluate(procedure = list("lda", "qda", "rpart", ensemble),
                        x = Sonar, y = "Class", resample = cv)
 perf <- get_performance(comparison, format="long")
 ggplot(perf, aes(x = method, y = error)) + geom_boxplot() + coord_flip()
+
+
+#===============================================================================
+#   Section 4: Benchmark
+#-------------------------------------------------------------------------------
+#   Note that this file does not contain the main benchmarking code but only the
+#   examples dicussed later in the benchmarking section of the paper.
+
+# Customized pre-processing to adapt data set format for a method `pamr` that
+# does not use the same standard as emil
+pre_pamr <- function(data){
+    data$fit$x <- list(x = t(data$fit$x),
+                       y = data$fit$y)
+    data$fit$y <- NULL
+    data$test$x <- t(data$test$x)
+    data
+}
+y <- factor(findInterval(prostate$lpsa, quantile(prostate$lpsa, 1:2/3)),
+            labels = c("low", "intermediate", "high"))
+result <- evaluate(procedure = "pamr", 
+                   x = prostate[1:8], y = y, 
+                   resample = cv, pre_process = list(pre_split, pre_pamr))
+
+# Using emil to evalute caret models
+modeling_procedure(method = "caret", parameter = list(
+    method = "rf",
+    ntree = 10000,
+    trControl = list(trainControl(
+        method = "repeatedcv", number = 5, repeats = 5,
+        returnData = FALSE, allowParallel = TRUE,
+        verboseIter = TRUE
+    )),
+    tuneGrid = list(data.frame(mtry = c(10, 50, 200)))
+))
 
