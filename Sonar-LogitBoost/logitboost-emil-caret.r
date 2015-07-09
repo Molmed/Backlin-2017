@@ -18,6 +18,7 @@ lbFuncs <- list(
         data.frame(nIter = 1 + ((1:len)*10))
     },
     fit = function(x, y, wts, param, lev, last, weights, classProbs, ...) {
+        gc()
         LogitBoost(as.matrix(x), y, nIter = param$nIter)
     },
     predict = function(modelFit, newdata, preProc = NULL, submodels = NULL){
@@ -26,7 +27,6 @@ lbFuncs <- list(
             tmp <- out
             out <- vector(mode = "list", length = nrow(submodels) + 1)
             out[[1]] <- tmp
-
             for(j in seq(along = submodels$nIter)) {
                 out[[j+1]] <- predict(modelFit,
                                       newdata,
@@ -39,19 +39,17 @@ lbFuncs <- list(
     sort = function(x) x
 )
 
+trControl <- trainControl(
+    method = "repeatedcv",
+    repeats = 10,
+    number = 10)
+
 procedure <- modeling_procedure(
     method = "caret",
-    predict_fun = function(object, x, ...){
-        predict_caret(object, x, ...)
-    },
     parameter = list(
         method = list(lbFuncs),
-        tuneLength = 3,
-        trControl = list(trainControl(
-            method = "repeatedcv",
-            number = 10,
-            repeats = 10
-        ))
+        tuneGrid = list(data.frame(nIter = c(10, 20, 30))),
+        trControl = list(trControl)
     )
 )
 
@@ -59,10 +57,12 @@ fold <- resample(method="holdout", y=Sonar$Class, nfold=1,
                  test_fraction=.25)[[1]]
 
 result <- evaluate(procedure, Sonar, "Class", resample=fold,
-                   pre_process = function(x, y, fold){
-                       pre_split(x, y, fold) %>%
-                       pre_convert(x_fun=as.matrix)
-                   })
+    pre_process = function(x, y, fold){
+       pre_split(x, y, fold) %>%
+       pre_convert(x_fun=as.matrix)
+    },
+    .save = c(model = FALSE, prediction = TRUE, error = FALSE)
+)
 
 Sys.sleep(3)
 

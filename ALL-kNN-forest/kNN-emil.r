@@ -1,5 +1,8 @@
+remove.values <- TRUE
 source("../get-geneexpression.r")
 library(emil)
+
+cv <- resample("crossvalidation", y, nrepeat = 3, nfold = 5)
 
 procedure <- modeling_procedure(
     method = "randomForest",
@@ -12,12 +15,16 @@ procedure <- modeling_procedure(
 
 x_dist <- dist(x)
 
-cv <- resample("crossvalidation", y, nreplicate=3, nfold=5)
-result <- evaluate(procedure, x, y, resample=cv, .verbose=TRUE,
+result <- evaluate(procedure, x, y, resample = cv,
     pre_process = function(x, y, fold){
         pre_split(x, y, fold) %>%
         pre_impute_knn(k = 5, distance_matrix = x_dist)
-    })
+    },
+    .save = c(model = FALSE, prediction = FALSE, importance = FALSE, error = TRUE),
+    .verbose = TRUE
+)
+
+error <- get_performance(result)
 
 Sys.sleep(3)
 

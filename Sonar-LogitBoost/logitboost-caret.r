@@ -17,6 +17,7 @@ lbFuncs <- list(
         data.frame(nIter = 1 + ((1:len)*10))
     },
     fit = function(x, y, wts, param, lev, last, weights, classProbs, ...) {
+        gc()
         LogitBoost(as.matrix(x), y, nIter = param$nIter)
     },
     predict = function(modelFit, newdata, preProc = NULL, submodels = NULL){
@@ -38,19 +39,19 @@ lbFuncs <- list(
     sort = function(x) x
 )
 
-fitControl <- trainControl(method = "repeatedcv",
-                           number = 10,
-                           repeats = 10)
+trControl <- trainControl(
+    method = "repeatedcv",
+    repeats = 10,
+    number = 10)
 
 inTraining <- createDataPartition(Sonar$Class, p = .75, list = FALSE)
-training <- Sonar[ inTraining,]
-model <- train(Class ~ ., data = training,
+model <- train(Class ~ ., data = Sonar,
                method = lbFuncs,
-               tuneLength = 3,
-               trControl = fitControl)
+               tuneGrid = data.frame(nIter = c(10, 20, 30)),
+               trControl = trControl,
+               subset = inTraining)
 
-testing  <- Sonar[-inTraining,]
-prediction <- predict(model, testing)
+prediction <- predict(model, Sonar[-inTraining,])
 
 Sys.sleep(3)
 

@@ -2,6 +2,7 @@ source("../get-sonar.r")
 library(emil)
 
 fit_LogitBoost <- function(x, y, nIter=ncol(x), ...){
+    gc()
     nice_require("caTools")
     inner_procedure <- modeling_procedure(
         fit_fun = function(x, y, nIter){
@@ -18,7 +19,7 @@ fit_LogitBoost <- function(x, y, nIter=ncol(x), ...){
         parameter = list(nIter = list(nIter))
     )
     if(length(nIter) > 1){
-        cv <- resample("crossvalidation", y, nreplicate = 10, nfold = 10)
+        cv <- resample("crossvalidation", y, nrepeat = 10, nfold = 10)
         result <- evaluate(inner_procedure, x, y, resample = cv,
                            .verbose = FALSE)
         error <- subtree(result, TRUE, "error")
@@ -36,13 +37,16 @@ procedure <- modeling_procedure(
     error_fun = function(...) error_rate(..., allow_rejection=TRUE)
 )
 
-fold <- resample(method="holdout", y=Sonar$Class, nfold=1, test_fraction=.25)[[1]]
+fold <- resample(method="holdout", y=Sonar$Class, nfold=1, 
+                 test_fraction=.25)[[1]]
 
-result <- evaluate(procedure, Sonar, "Class", resample=fold,
-                   pre_process = function(x, y, fold){
-                       pre_split(x, y, fold) %>%
-                       pre_convert(x_fun=as.matrix)
-                   })
+result <- evaluate(procedure, x = Sonar, y = "Class", resample=fold,
+    pre_process = function(x, y, fold){
+        pre_split(x, y, fold) %>%
+        pre_convert(x_fun=as.matrix)
+    },
+    .save = c(model = FALSE, prediction = TRUE, error = FALSE)
+)
 
 Sys.sleep(3)
 
