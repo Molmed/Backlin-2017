@@ -1,6 +1,6 @@
 #!/usr/bin/Rscript
 
-#===============================================================================
+#-------------------------------------------------------------------------------
 #   This script contains the code examples in sections 2 and 3 of the paper.
 #   The benchmarking study of section 4 can be found in `benchmark_setup.R`.
 #-------------------------------------------------------------------------------
@@ -21,9 +21,7 @@ sum(sapply(c(train.default, caret:::nominalTrainWorkflow,
            function(f) length(body(f))))
 
 
-#===============================================================================
-#   Section 2: The main example
-#-------------------------------------------------------------------------------
+#------------------------------------------------[ Section 2: The main example ]
 
 library(ElemStatLearn)
 data(prostate)
@@ -42,18 +40,14 @@ result <- evaluate(procedure = "lasso",
 get_performance(result)
 
 
-#===============================================================================
-#   Section 2.2: Resampling
-#-------------------------------------------------------------------------------
+#----------------------------------------------------[ Section 2.2: Resampling ]
 
 cv <- resample(method = "crossvalidation", y = prostate$lpsa,
                nrepeat = 2, nfold = 3)
 head(cv)
 
 
-#===============================================================================
-#   Section 2.3: Splitting and pre-processing 
-#-------------------------------------------------------------------------------
+#----------------------------------[ Section 2.3: Splitting and pre-processing ]
 
 prostate_split <- pre_split(x = prostate[1:8],
                             y = prostate$lpsa,
@@ -81,9 +75,7 @@ result <- evaluate(procedure = "lasso",
                    ))
 
 
-#===============================================================================
-#   Section 2.4: Model fitting and testing
-#-------------------------------------------------------------------------------
+#-------------------------------------[ Section 2.4: Model fitting and testing ]
 
 model <- fit(procedure = "lasso", x = prostate_split$fit$x,
                                   y = prostate_split$fit$y)
@@ -109,9 +101,7 @@ if(interactive()){
 }
 
 
-#===============================================================================
-#   Section 2.5: Model interpretation
-#-------------------------------------------------------------------------------
+#------------------------------------------[ Section 2.5: Model interpretation ]
 
 lasso <- modeling_procedure("lasso")
 model <- fit(procedure = lasso, x = prostate_split$fit$x,
@@ -121,9 +111,7 @@ get_importance(model)
 print(lasso$importance_fun)
 
 
-#===============================================================================
-#   Section 2.6: Downstream analysis
-#-------------------------------------------------------------------------------
+#-------------------------------------------[ Section 2.6: Downstream analysis ]
 
 subtree(x = result, TRUE, "error")
 select(result, Fold = TRUE, RMSE = "error")
@@ -141,9 +129,7 @@ ggplot(internal_tuning, aes(x = Lambda, y = TuningRMSE, group = Fold)) +
     geom_line()
 
 
-#===============================================================================
-#   Section 2.7: Model comparison
-#-------------------------------------------------------------------------------
+#----------------------------------------------[ Section 2.7: Model comparison ]
 
 # Compare regression methods
 comparison <- evaluate(procedure = c(LASSO = "lasso", 
@@ -176,9 +162,7 @@ comparison %>%
     spread(pre_process, error)
 
 
-#===============================================================================
-#   Section 2.8: Scalability
-#-------------------------------------------------------------------------------
+#---------------------------------------------------[ Section 2.8: Scalability ]
 
 library(parallel)
 cluster <- makeCluster(spec = 4)
@@ -199,9 +183,7 @@ result <- parLapply(cluster, cv, function(fold){
 })
 
 
-#===============================================================================
-#   Section 3.1: A parallelized simulation
-#-------------------------------------------------------------------------------
+#-------------------------------------[ Section 3.1: A parallelized simulation ]
 
 # Set up the problem
 x <- matrix(rnorm(100 * 10000), 100, 10000)
@@ -238,9 +220,7 @@ system.time(result_par2 <- evaluate(procedure = par_proc, x = x, y = y,
                                     resample = cv))
 
 
-#===============================================================================
-#   Section 3.2: Survival modeling
-#-------------------------------------------------------------------------------
+#---------------------------------------------[ Section 3.2: Survival modeling ]
 
 # Install necessary bioconductor packages
 required.pkg <- c("Biobase", "breastCancerUPP")
@@ -287,9 +267,7 @@ result <- evaluate(procedure = pca_cox, x = x, y = y, resample = ho,
                    pre_process = list(pre_split, pre_cox_pca))
 
 
-#===============================================================================
-#   Section 3.3: Custom ensembles
-#-------------------------------------------------------------------------------
+#----------------------------------------------[ Section 3.3: Custom ensembles ]
 
 fit_ensemble <- function(x, y, procedure_list){
     samples <- resample("bootstrap", y, nfold = length(procedure_list))
@@ -344,11 +322,10 @@ perf <- get_performance(comparison, format="long")
 ggplot(perf, aes(x = method, y = error)) + geom_boxplot() + coord_flip()
 
 
-#===============================================================================
-#   Section 4: Benchmark
-#-------------------------------------------------------------------------------
-#   Note that this file does not contain the main benchmarking code but only the
-#   examples dicussed later in the benchmarking section of the paper.
+#-------------------------------------------------------[ Section 4: Benchmark ]
+#   Note that this file section does not contain the
+#   main benchmarking code but only the examples dicussed
+#   later in the benchmarking section of the paper.
 
 # Customized pre-processing to adapt data set format for a method `pamr` that
 # does not use the same standard as emil

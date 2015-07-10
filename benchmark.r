@@ -26,9 +26,6 @@ jobs <- expand.grid(input = jobs$input, replicate=1:5) %>%
     mutate(title = sprintf("%s-%s-%i", task, method, replicate)) %>%
     mutate(output = sprintf("output/%s.ps.log", title))
 jobs <- jobs[jobs$task != "rf-parallelization",]
-
-jobs <- jobs[jobs$method == "emil",]
-jobs <- jobs[jobs$task == "ALL-PCA-tree",]
 rownames(jobs) <- NULL
 
 
@@ -90,9 +87,6 @@ tab <- do.call(rbind, lapply(1:nrow(jobs), function(i){
     }, error = function(...) NULL)
 }))
 
-save(tab, file="tab_150617.Rdata")
-
-load("tab_150617.Rdata")
 
 # Visual inspection
 tab_summary <- tab %>%
@@ -156,9 +150,8 @@ format_memory <- function(x){
 }
 
 plot.data <- data.table(tab3[complete.cases(tab3),])
-g <- 
-ggplot(plot.data, aes(x = ISOdate(2000, 1, 1, 0) + ELAPSED, 
-                                        y = RSS*1000, color=method)) +
+g <- ggplot(plot.data, aes(x = ISOdate(2000, 1, 1, 0) + ELAPSED, 
+                           y = RSS*1000, color=method)) +
     geom_hline(data = tab_setup, aes(yintercept = MeanMaxRSS*1000), color="grey80") +
     geom_line(data = plot.data[method == "emil-caret"]) +
     geom_line(data = plot.data[method == "caret"]) +
