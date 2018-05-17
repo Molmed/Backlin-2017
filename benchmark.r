@@ -3,14 +3,6 @@
 
 #----------------------------------------------------------------------[ Setup ]
 
-required.pkg <- c("caTools", "kernlab", "rpart", "pamr", "randomForest")
-installed.pkg <- required.pkg %in% rownames(installed.packages())
-if(!all(installed.pkg)){
-    install.packages(required.pkg[!installed.pkg])
-}
-rm(required.pkg, installed.pkg)
-
-
 basedir <- getwd()
 library(dplyr)
 library(ggplot2)
@@ -20,7 +12,7 @@ library(tidyr)
 setwd(basedir)
 jobs <- data.frame(input = dir(recursive=TRUE)) %>%
     dplyr::filter(grepl("^[^/]+/[^/]+.r$", input))
-jobs <- expand.grid(input = jobs$input, replicate=1:5) %>%
+jobs <- expand.grid(input = jobs$input, replicate=1:2) %>% # DEBUG!! should be 1:5
     extract(input, c("task", "input", "method"),
             "^([^/]+)/(\\w+-([^/]+).r)$") %>%
     mutate(title = sprintf("%s-%s-%i", task, method, replicate)) %>%
@@ -32,20 +24,19 @@ rownames(jobs) <- NULL
 #--------------------------------------------------------------------[ Execute ]
 
 for(i in order(jobs$replicate, jobs$task, sample(nrow(jobs)))){
-    setwd(sprintf("%s/%s", basedir, jobs$task[i]))
+    setwd(file.path(basedir, jobs$task[i]))
     if(!file.exists(jobs$output[i])){
         cat(format(Sys.time()), "\n")
-        system(sprintf("../benchmark.sh %s %s", jobs$input[i], jobs$title[i]))
+        cmd <- paste(file.path("..", "benchmark.sh"), jobs$input[i], jobs$title[i])
+        system(cmd)
         files <- dir(".", "*.log")
         dir.create("output", showWarnings=FALSE)
-        file.rename(files, sprintf("%s/%s", dirname(jobs$output[i]), files))
+        file.rename(files, file.path(dirname(jobs$output[i]), files))
         cat("---\n")
     }
 }
 
-system("squeue | grep chrib | grep inter | cut -c 10-18 | xargs scancel")
-stop("Done!")
-
+stop("%%")
 
 #---------------------------------------------------------[ Summarize the jobs ]
 

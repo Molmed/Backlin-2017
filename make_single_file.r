@@ -6,10 +6,10 @@ header <-
 #   This scripts holds all code required to replicate the results of the paper
 #   \"Developer Friendly and Computationally Efficient Predictive Modeling
 #   without Information Leakage: The emil Package for R\" by Christofer L Bäcklin
-#   and Mats G Gustafsson (2015).
+#   and Mats G Gustafsson (2018).
 #   
 #   It is essentially all the files of the GitHub repository
-#   https://github.com/Molmed/Backlin-2014 joined into one.
+#   https://github.com/Molmed/Backlin-2017 joined into one.
 #   
 #-------------------------------------------------------------------------------
 

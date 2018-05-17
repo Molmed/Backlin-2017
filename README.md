@@ -14,8 +14,8 @@ Instructions
 ------------
 The most convenient way to run the analysis is to clone the repo to your computer and run the files as shown below (commands for unix/linux).
 
-    git clone git@github.com:Molmed/Backlin-2014.git
-    cd Backlin-2014
-    R -f benchmark_setup.R
+    git clone git@github.com:Molmed/Backlin-2017.git
+    cd Backlin-2017
+    R -f benchmark_setup.r
 
-The code examples of section 2 and 3 of the paper can be found in the script `examples.R`.
+The code examples of section 2 and 3 of the paper can be found in the script `examples.r`.
