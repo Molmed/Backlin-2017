@@ -12,8 +12,8 @@ library(tidyr)
 setwd(basedir)
 jobs <- data.frame(input = dir(recursive=TRUE)) %>%
     dplyr::filter(grepl("^[^/]+/[^/]+.r$", input))
-jobs <- expand.grid(input = jobs$input, replicate=1:2) %>% # DEBUG!! should be 1:5
-    extract(input, c("task", "input", "method"),
+jobs <- expand.grid(input = jobs$input, replicate=1:5) %>%
+    tidyr::extract(input, c("task", "input", "method"),
             "^([^/]+)/(\\w+-([^/]+).r)$") %>%
     mutate(title = sprintf("%s-%s-%i", task, method, replicate)) %>%
     mutate(output = sprintf("output/%s.ps.log", title))
@@ -36,10 +36,8 @@ for(i in order(jobs$replicate, jobs$task, sample(nrow(jobs)))){
     }
 }
 
-stop("%%")
 
 #---------------------------------------------------------[ Summarize the jobs ]
-
 
 setwd(basedir)
 
@@ -92,73 +90,96 @@ ggplot(tab_summary, aes(x = method, y = Duration)) +
 ggplot(tab_summary, aes(x = method, y = MaxRSS)) +
     geom_boxplot() + facet_wrap(~task, scales="free_y")
 
-# Prepare the plot
+
+#--------------------------------------------------------------[ Make the plot ]
+
+# To overcome the problem that ggplot2 cannot have different axis breaks for
+# different panels we shift all values so that the X and Y intervals never
+# overlap between tasks.
+
+shift_rss <- 1e12
+shift_elapsed <- 1e6
+
+format_rss <- function(x){
+  # Based on http://www.moeding.net/archives/32-Metric-prefixes-for-ggplot2-scales.html
+  x <- x %% shift_rss
+  i <- sum(max(x, na.rm=TRUE) >= 1000^(1:3))
+  prefix <- c("MB", "GB")[i]
+  divisor <- 1000^i
+
+  paste(format(round(x/divisor, 1), trim=TRUE, scientific=FALSE), prefix)
+}
+
+format_elapsed <- function(x){
+  format(ISOdate(2000, 1, 1, 0) + x %% shift_elapsed, "%k:%M:%S")
+}
+
 tab_setup <- tab %>%
     dplyr::filter(method == "setup") %>%
     group_by(task, replicate) %>%
     summarize(MaxRSS = max(RSS)) %>%
     group_by(task) %>%
-    summarize(MeanMaxRSS = mean(MaxRSS))
+    summarize(TickRSS = mean(MaxRSS))
 
-tab2 <- mutate(tab, replicate = sprintf("r%i", replicate))
-tab2 <- select(tab2, task, method, replicate, ELAPSED, RSS)
-tab2 <- spread(tab2, replicate, RSS)
-tab2 <- gather_(tab2, "replicate", "RSS", grep("^r\\d$", colnames(tab2), value=TRUE))
-tab2 <- mutate(tab2, title = sprintf("%s-%s-%i", task, method, replicate))
+mean_tab <- tab %>%
+  group_by(task, method, ELAPSED) %>%
+  summarise(MeanRSS = mean(RSS))
 
-done <- tab2 %>%
-    group_by(title) %>%
-    summarize(MaxRSS = max(RSS, na.rm=TRUE)) %>%
-    dplyr::filter(MaxRSS > 0)
-tab2 <- dplyr::filter(tab2, title %in% done$title)
+shift <- mean_tab %>%
+  group_by(task) %>%
+  summarise(TickRSS = max(MeanRSS), TickELAPSED = max(ELAPSED)) %>%
+  mutate(
+    ShiftRSS = shift_rss * seq_along(TickRSS),
+    ShiftELAPSED = shift_elapsed * seq_along(TickELAPSED)
+  )
 
-last <- 1
-for(i in 1:nrow(tab2)){
-    if(!is.na(tab2$RSS[i])){
-        last <- sign(tab2$RSS[i])
-    } else if(last == 0){
-        tab2$RSS[i] <- 0
-    }
-}
+axis_breaks <- shift %>%
+  bind_rows(tab_setup) %>%
+  bind_rows(mutate(shift, TickRSS = 0, TickELAPSED = 0)) %>%
+  inner_join(shift, by = "task") %>%
+  mutate(
+    TickRSS.y = TickRSS.x + ShiftRSS.y,
+    TickELAPSED.y = TickELAPSED.x + ShiftELAPSED.y
+  ) %>%
+  transmute(
+    task = task,
+    TickRSS = TickRSS.y,
+    TickELAPSED = TickELAPSED.y,
+  )
 
-tab3 <- tab2 %>% dplyr::filter(task != "rf") %>%
-    mutate(method = factor(method, c("caret", "caret-custom", "emil", "emil-caret"))) %>%
-    group_by(ELAPSED, task, method) %>%
-    summarize(RSS = mean(RSS))
+plot_data <- mean_tab %>%
+  dplyr::filter(method != "setup") %>%
+  inner_join(shift, by = "task") %>%
+  mutate(
+    MeanRSS = MeanRSS + ShiftRSS,
+    ELAPSED = ELAPSED + ShiftELAPSED
+  )
 
+setup_hlines <- axis_breaks %>%
+  dplyr::filter(is.na(TickELAPSED))
 
-#--------------------------------------------------------------[ Make the plot ]
-
-library(scales)
-
-format_memory <- function(x){
-    # Based on http://www.moeding.net/archives/32-Metric-prefixes-for-ggplot2-scales.html
-    i <- sum(max(x, na.rm=TRUE) >= 1000^(1:3))
-    prefix <- c("kB", "MB", "GB")[i]
-    divisor <- 1000^i
-
-    paste(format(round(x/divisor, 1), trim=TRUE, scientific=FALSE), prefix)
-}
-
-plot.data <- data.table(tab3[complete.cases(tab3),])
-g <- ggplot(plot.data, aes(x = ISOdate(2000, 1, 1, 0) + ELAPSED, 
-                           y = RSS*1000, color=method)) +
-    geom_hline(data = tab_setup, aes(yintercept = MeanMaxRSS*1000), color="grey80") +
-    geom_line(data = plot.data[method == "emil-caret"]) +
-    geom_line(data = plot.data[method == "caret"]) +
-    geom_line(data = plot.data[method == "emil"]) +
+g <- plot_data %>%
+  ggplot(aes(x = ELAPSED, y = MeanRSS, colour = method)) +
+    facet_wrap(~task, scales="free") +
+    geom_hline(data = setup_hlines, aes(yintercept = TickRSS), color="grey80") +
+    geom_line() +
     ylab("Memory (RSS)") + xlab("Time (h:mm:ss)") + 
-    facet_wrap(~task, scales="free") + theme_bw(base_size=9) +
-    scale_colour_manual(values=c("#ff7f2a", "#8d5fd3", "#00aa88", "#444444")) +
-    scale_x_datetime(
-        labels = date_format("%k:%M:%S"),
-        breaks = pretty_breaks(n=2)
+    scale_colour_manual("Method", values=c("#ff7f2a", "#8d5fd3", "grey80")) +
+    scale_x_continuous(
+        labels = format_elapsed,
+        breaks = axis_breaks$TickELAPSED
     ) +
-    scale_y_continuous(labels = format_memory) +
-    theme(legend.position="right")
-    theme(legend.position=c(5/6, 1/4))
+    scale_y_continuous(
+      labels = format_rss,
+      breaks = axis_breaks$TickRSS
+    ) +
+    theme_bw(base_size=9) +
+    theme(
+      panel.grid.minor = element_blank(),
+      panel.grid.major.x = element_blank(),
+      legend.position=c(5/6, 1/4)
+    )
 
 cairo_pdf("benchmark.pdf", 16/cm(1), 8/cm(1))
 print(g)
 dev.off()
-

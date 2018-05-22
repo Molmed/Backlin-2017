@@ -23,6 +23,7 @@ result <- evaluate(procedure, x, y, resample = cv,
 )
 
 error <- get_performance(result)
+print(error)
 
 Sys.sleep(3)
 

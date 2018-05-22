@@ -5,12 +5,12 @@ cv <- resample("crossvalidation", y, nrepeat = 2, nfold = 3)
 
 procedure <- modeling_procedure(
     method = "svm",
-    fit_fun = function(x, y, degree = 1, scale = .01){
+    fit_fun = function(x, y, degree = 1){
         gc()
         nice_require("kernlab")
-        kernlab::lssvm(x = x, y = y,
+        kernlab::ksvm(x = x, y = y, C=1,
              kernel = kernlab::polydot(degree = degree,
-                                       scale = scale,
+                                       scale = .01,
                                        offset = 1))
     },
     predict_fun = function(object, x){
@@ -18,6 +18,8 @@ procedure <- modeling_procedure(
     },
     parameter = list(degree = 1:3)
 )
+
+system.time(fit(procedure, x, y))
 
 result <- evaluate(procedure, x, y, resample = cv,
     pre_process = function(x, y, fold){
@@ -29,6 +31,6 @@ result <- evaluate(procedure, x, y, resample = cv,
 )
 
 error <- get_performance(result)
+print(error)
 
 Sys.sleep(3)
-

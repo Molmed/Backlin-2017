@@ -1,17 +1,21 @@
-repo,package,version
-cran,mlbench,2.1-1
-bioc,breastCancerUPP,1.16.0
-cran,ElemStatLearn,2015.6.26
-cran,RANN,2.5.1
-cran,caTools,1.17.1
-cran,kernlab,0.9-26
-cran,randomForest,4.6-14
-cran,gower,0.1.2
-cran,recipes,0.1.2
-cran,caret,6.0-79
-cran,data.table,1.11.2
-cran,emil,2.2.8
-cran,dplyr,0.7.5
-cran,ggplot2,2.2.1
-cran,scales,0.5.0
-cran,tidyr,0.8.1
+repo,package,version,comment
+cran,mlbench,2.1-1,Data
+bioc,Biobase,2.40.0,Data
+bioc,breastCancerUPP,1.16.0,Data
+cran,ElemStatLearn,2015.6.26,Data
+cran,RANN,2.5.1,
+cran,caTools,1.17.1,
+cran,e1071,1.6-8,Algorithm
+cran,kernlab,0.9-26,
+cran,pamr,1.55,Algorithm
+cran,randomForest,4.6-14,Algorithm
+cran,import,1.1.0,Needed for caret
+cran,gower,0.1.2,Needed for caret
+cran,recipes,0.1.2,Needed for caret
+cran,caret,6.0-47,Newest is 6.0-79
+cran,data.table,1.11.2,Needed for emil
+cran,emil,2.1.0,Newest is 2.2.8
+cran,dplyr,0.7.5,
+cran,ggplot2,2.2.1,
+cran,scales,0.5.0,
+cran,tidyr,0.8.1,

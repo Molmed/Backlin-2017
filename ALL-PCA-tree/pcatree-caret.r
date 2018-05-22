@@ -19,8 +19,8 @@ rpart2$fit <- function(...){
 }
 
 for(i in seq_along(cv)){
-    for(j in 2:length(cv[[i]])){
-        trainIndex <- unlist(cv[[i]][-c(1,j)])
+    for(j in seq_along(cv[[i]])){
+        trainIndex <- unlist(cv[[i]][-j])
         testIndex <- cv[[i]][[j]]
         model <- train(x[trainIndex,], y[trainIndex],
                        method = rpart2,
@@ -28,10 +28,12 @@ for(i in seq_along(cv)){
                        tuneGrid = data.frame(maxdepth = c(2,3,5)),
                        trControl = trControl)
         prediction <- predict(model, x[testIndex,])
-        error[i, j-1] <- 1 - postResample(prediction, y[testIndex])["Accuracy"]
+        error[i, j] <- 1 - postResample(prediction, y[testIndex])["Accuracy"]
         rm(trainIndex, testIndex, model, prediction)
     }
 }
+
+print(error)
 
 Sys.sleep(3)
 
