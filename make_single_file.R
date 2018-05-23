@@ -15,8 +15,8 @@ header <-
 
 "
 
-files <- dir(".", "(py|r|sh)$", recursive=TRUE)
-files <- unique(c("examples.r", files[order(grepl("/", files))]))
+files <- dir(".", "(py|R|sh)$", recursive=TRUE)
+files <- unique(c("examples.R", files[order(grepl("/", files))]))
 output <- "emil_v3_replication.txt"
 cat(header, file=output, append=FALSE)
 

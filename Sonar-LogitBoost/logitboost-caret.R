@@ -1,4 +1,4 @@
-source("../get-sonar.r")
+source("../get-sonar.R")
 library(caret)
 
 lbFuncs <- list(

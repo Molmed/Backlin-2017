@@ -11,10 +11,10 @@ library(tidyr)
 
 setwd(basedir)
 jobs <- data.frame(input = dir(recursive=TRUE)) %>%
-    dplyr::filter(grepl("^[^/]+/[^/]+.r$", input))
+    dplyr::filter(grepl("^[^/]+/[^/]+.R$", input))
 jobs <- expand.grid(input = jobs$input, replicate=1:5) %>%
     tidyr::extract(input, c("task", "input", "method"),
-            "^([^/]+)/(\\w+-([^/]+).r)$") %>%
+            "^([^/]+)/(\\w+-([^/]+).R)$") %>%
     mutate(title = sprintf("%s-%s-%i", task, method, replicate)) %>%
     mutate(output = sprintf("output/%s.ps.log", title))
 jobs <- jobs[jobs$task != "rf-parallelization",]

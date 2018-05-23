@@ -1,4 +1,4 @@
-source("../get-geneexpression.r")
+source("../get-geneexpression.R")
 library(caret)
 
 cv <- replicate(2, createFolds(y, k = 3), simplify=FALSE)

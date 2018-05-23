@@ -1,4 +1,4 @@
-source("../get-geneexpression.r")
+source("../get-geneexpression.R")
 library(emil)
 
 cv <- resample("crossvalidation", y, nrepeat = 2, nfold = 3)

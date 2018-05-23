@@ -1,20 +1,20 @@
-source("../get-geneexpression.r")
+source("../get-geneexpression.R")
 library(caret)
 
-cv <- replicate(3, createFolds(y, k = 5), simplify = FALSE)
-error <- matrix(NA, 3, 5)
+cv <- replicate(2, createFolds(y, k = 3), simplify=FALSE)
+error <- matrix(NA, 2, 3)
 
 trControl <- trainControl(
     method = "repeatedcv",
-    repeats = 3,
-    number = 5,
+    repeats = 2,
+    number = 3,
     returnData = FALSE,
     allowParallel = FALSE)
 
-pam <- getModelInfo("pam")$pam
-pam$fit <- function(...){
+svmPoly <- getModelInfo("svmPoly")$svmPoly
+svmPoly$fit <- function( ...){
     gc()
-    getModelInfo("pam")$pam$fit(...)
+    getModelInfo("svmPoly")$svmPoly$fit(...)
 }
 
 for(i in seq_along(cv)){
@@ -22,8 +22,8 @@ for(i in seq_along(cv)){
         trainIndex <- unlist(cv[[i]][-j])
         testIndex <- cv[[i]][[j]]
         model <- train(x[trainIndex,], y[trainIndex],
-                       method = pam,
-                       tuneGrid = data.frame(threshold = 0:9),
+                       method = svmPoly,
+                       tuneGrid = data.frame(degree = 1:3, scale=.01, C=1),
                        trControl = trControl)
         prediction <- predict(model, x[testIndex,])
         error[i, j] <- 1 - postResample(prediction, y[testIndex])["Accuracy"]
