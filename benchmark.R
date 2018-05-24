@@ -17,7 +17,7 @@ jobs <- expand.grid(input = jobs$input, replicate=1:5) %>%
             "^([^/]+)/(\\w+-([^/]+).R)$") %>%
     mutate(title = sprintf("%s-%s-%i", task, method, replicate)) %>%
     mutate(output = sprintf("output/%s.ps.log", title))
-jobs <- jobs[jobs$task != "rf-parallelization",]
+jobs <- jobs[jobs$task != "rf-parallelization", ]
 rownames(jobs) <- NULL
 
 
@@ -49,9 +49,9 @@ tab <- do.call(rbind, lapply(1:nrow(jobs), function(i){
                      colClasses=c("integer", rep("character", 3),
                                   rep("numeric", 2), rep("integer", 2)))
         )
-        tab <- tab[complete.cases(tab),]
+        tab <- tab[complete.cases(tab), ]
         tab$ELAPSED %<>% strsplit(":") %>%
-            sapply(function(x) sum(c(3600, 60,1)*tail(c(0, as.integer(x)), 3)))
+            sapply(function(x) sum(c(3600, 60, 1)*tail(c(0, as.integer(x)), 3)))
         tab <- tab %>%
             mutate(DATETIME = as.POSIXct(paste(DATE, TIME))) %>%
             select(-DATE, -TIME)
@@ -61,7 +61,7 @@ tab <- do.call(rbind, lapply(1:nrow(jobs), function(i){
             dplyr::filter(ELAPSED > min(ELAPSED))
         if(nrow(tab_start) > 0){
             # This is a multicore run, sum up all relevant processes
-            tab <- tab[!tab$PID %in% tab_start$PID,] %>%
+            tab <- tab[!tab$PID %in% tab_start$PID, ] %>%
                 group_by(DATETIME) %>%
                 summarize(task = unique(task),
                           method = unique(method),

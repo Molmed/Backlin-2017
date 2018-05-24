@@ -4,8 +4,8 @@ library("caret")
 lbFuncs <- list(
     library = "caTools",
     loop = function(grid) {
-        loop <- grid[which.max(grid$nIter),,drop = FALSE]
-        submodels <- grid[-which.max(grid$nIter),,drop = FALSE]
+        loop <- grid[which.max(grid$nIter), , drop = FALSE]
+        submodels <- grid[-which.max(grid$nIter), , drop = FALSE]
         submodels <- list(submodels)
         list(loop = loop, submodels = submodels)
     },
@@ -51,7 +51,7 @@ model <- train(Class ~ ., data = Sonar,
                trControl = trControl,
                subset = inTraining)
 
-prediction <- predict(model, Sonar[-inTraining,])
+prediction <- predict(model, Sonar[-inTraining, ])
 
 Sys.sleep(3)
 

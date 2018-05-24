@@ -272,7 +272,7 @@ result <- evaluate(procedure = pca_cox, x = x, y = y, resample = ho,
 fit_ensemble <- function(x, y, procedure_list){
     samples <- resample("bootstrap", y, nfold = length(procedure_list))
     Map(function(procedure, fold){
-        try(fit(procedure, x[index_fit(fold),], y[index_fit(fold)]),
+        try(fit(procedure, x[index_fit(fold), ], y[index_fit(fold)]),
             silent=TRUE)
     }, procedure_list, samples)
 }

@@ -22,12 +22,12 @@ for(i in seq_along(cv)){
     for(j in seq_along(cv[[i]])){
         trainIndex <- unlist(cv[[i]][-j])
         testIndex <- cv[[i]][[j]]
-        model <- train(x[trainIndex,], y[trainIndex],
+        model <- train(x[trainIndex, ], y[trainIndex],
                        method = rpart2,
                        preProcess = "pca",
-                       tuneGrid = data.frame(maxdepth = c(2,3,5)),
+                       tuneGrid = data.frame(maxdepth = c(2, 3, 5)),
                        trControl = trControl)
-        prediction <- predict(model, x[testIndex,])
+        prediction <- predict(model, x[testIndex, ])
         error[i, j] <- 1 - postResample(prediction, y[testIndex])["Accuracy"]
         rm(trainIndex, testIndex, model, prediction)
     }
