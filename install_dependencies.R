@@ -2,44 +2,43 @@
 
 if(!require("devtools")){
   install.packages("devtools")
+  stopifnot(require("devtools"))
 }
 
 deps <- read.csv("dependencies.csv", stringsAsFactors = FALSE)
 
-install_dep <- function(pkg, version, repo){
-  ip <- installed.packages()
+install_dep <- function(pkg, version, repo, lib.loc=NULL){
+  if(is.character(lib.loc)){
+    dir.create(lib.loc, showWarnings=FALSE)
+  }
+
+  ip <- installed.packages(lib.loc=lib.loc)
   
   if(!pkg %in% row.names(ip)){
     if(repo == "bioc"){
       source("https://bioconductor.org/biocLite.R")
-      biocLite(pkg)
-      return()
+      biocLite(pkg, lib.loc=lib.loc)
+      return(TRUE)
     }
-    install_version(pkg, version = version, type = "source")
-    return()
+    install_version(pkg, version = version, type = "source", lib.loc=lib.loc)
+    return(TRUE)
   }
-  
+
   have_version <- ip[pkg, "Version"]
-  if (version != have_version && repo != "bioc") {
-    msg <- sprintf(
-      "Found package %s version %s, want %s. Do you want to replace currently installed version? [y/n/Q] ",
-      pkg, have_version, version
-    )
-    ans <- tolower(readline(msg))
-    if(ans == "q"){
-      stop("aborting")  
-    }
-    if(ans == "y"){
-      install_version(pkg, version = version, type = "source")
-      return()
-    }
-    
-    warning(sprintf("Keeping package %s version %s. Code might not work.", pkg, version))
+  if(version == have_version){
+    return(TRUE)
   }
+
+  if(is.null(lib.loc)) {
+    return(FALSE)  # Don't overwrite existing package in default lib.loc
+  }
+
+  install_version(pkg, version = version, type = "source", lib.loc=lib.loc)
 }
 
 for(i in 1:nrow(deps)){
-  install_dep(deps$package[i], deps$version[i], deps$repo[i])
+  install_dep(deps$package[i], deps$version[i], deps$repo[i], lib.loc=NULL)
+  install_dep(deps$package[i], deps$version[i], deps$repo[i], lib.loc="vendor")
 }
 
 missing_packages <- setdiff(deps$package, row.names(installed.packages()))

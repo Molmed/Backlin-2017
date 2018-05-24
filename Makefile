@@ -6,10 +6,10 @@ clean:
 .PHONY: dependencies all_jobs.err.log
 
 dependencies:
-	R -f install_dependencies.r
+	R --vanilla -f install_dependencies.R
 
-run: dependencies
-	R -f benchmark.r
+benchmark: dependencies
+	R --vanilla -f benchmark.R
 
 all_jobs.err.log:
 	find . -path "*/output/*.err.log" -exec echo "{}" \; -exec cat {} \; -exec echo "--------" \; > $@
