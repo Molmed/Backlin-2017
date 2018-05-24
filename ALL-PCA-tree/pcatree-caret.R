@@ -1,7 +1,7 @@
 source("../get-geneexpression.R")
 library("caret")
 
-cv <- replicate(2, createFolds(y, k = 3), simplify=FALSE)
+cv <- replicate(2, createFolds(y, k = 3), simplify = FALSE)
 error <- matrix(NA, 2, 3)
 
 trControl <- trainControl(

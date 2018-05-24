@@ -21,7 +21,7 @@ lbFuncs <- list(
         LogitBoost(as.matrix(x), y, nIter = param$nIter)
     },
     predict = function(modelFit, newdata, preProc = NULL, submodels = NULL) {
-        out <- predict(modelFit, newdata, type="class")
+        out <- predict(modelFit, newdata, type = "class")
         if (!is.null(submodels)) {
             tmp <- out
             out <- vector(mode = "list", length = nrow(submodels) + 1)

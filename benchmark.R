@@ -10,9 +10,9 @@ library("tidyr")
 
 
 setwd(basedir)
-jobs <- data.frame(input = dir(recursive=TRUE)) %>%
+jobs <- data.frame(input = dir(recursive = TRUE)) %>%
     dplyr::filter(grepl("^[^/]+/[^/]+.R$", input))
-jobs <- expand.grid(input = jobs$input, replicate=1:5) %>%
+jobs <- expand.grid(input = jobs$input, replicate = 1:5) %>%
     tidyr::extract(input, c("task", "input", "method"),
             "^([^/]+)/(\\w+-([^/]+).R)$") %>%
     mutate(title = sprintf("%s-%s-%i", task, method, replicate)) %>%
@@ -30,7 +30,7 @@ for (i in order(jobs$replicate, jobs$task, sample(nrow(jobs)))) {
         cmd <- paste(file.path("..", "benchmark.sh"), jobs$input[i], jobs$title[i])
         system(cmd)
         files <- dir(".", "*.log")
-        dir.create("output", showWarnings=FALSE)
+        dir.create("output", showWarnings = FALSE)
         file.rename(files, file.path(dirname(jobs$output[i]), files))
         cat("---\n")
     }
@@ -46,7 +46,7 @@ tab <- do.call(rbind, lapply(1:nrow(jobs), function(i) {
         tab <- data.frame(task = jobs$task[i], method = jobs$method[i],
                           replicate = jobs$replicate[i],
             read.csv(sprintf("%s/%s", jobs$task[i], jobs$output[i]),
-                     colClasses=c("integer", rep("character", 3),
+                     colClasses = c("integer", rep("character", 3),
                                   rep("numeric", 2), rep("integer", 2)))
         )
         tab <- tab[complete.cases(tab), ]
@@ -84,11 +84,11 @@ tab_summary <- tab %>%
               MeanCPU = mean(CPU),
               MaxMEM = max(MEM),
               MaxRSS = max(RSS),
-              MaxVSIZE = max(VSIZE)) 
+              MaxVSIZE = max(VSIZE))
 ggplot(tab_summary, aes(x = method, y = Duration)) +
-    geom_boxplot() + facet_wrap(~task, scales="free_y")
+    geom_boxplot() + facet_wrap(~task, scales = "free_y")
 ggplot(tab_summary, aes(x = method, y = MaxRSS)) +
-    geom_boxplot() + facet_wrap(~task, scales="free_y")
+    geom_boxplot() + facet_wrap(~task, scales = "free_y")
 
 
 #--------------------------------------------------------------[ Make the plot ]
@@ -103,11 +103,11 @@ shift_elapsed <- 1e6
 format_rss <- function(x) {
   # Based on http://www.moeding.net/archives/32-Metric-prefixes-for-ggplot2-scales.html
   x <- x %% shift_rss
-  i <- sum(max(x, na.rm=TRUE) >= 1000^(1:3))
+  i <- sum(max(x, na.rm = TRUE) >= 1000^(1:3))
   prefix <- c("MB", "GB")[i]
   divisor <- 1000^i
 
-  paste(format(round(x/divisor, 1), trim=TRUE, scientific=FALSE), prefix)
+  paste(format(round(x/divisor, 1), trim = TRUE, scientific = FALSE), prefix)
 }
 
 format_elapsed <- function(x) {
@@ -160,11 +160,11 @@ setup_hlines <- axis_breaks %>%
 
 g <- plot_data %>%
   ggplot(aes(x = ELAPSED, y = MeanRSS, colour = method)) +
-    facet_wrap(~task, scales="free") +
-    geom_hline(data = setup_hlines, aes(yintercept = TickRSS), color="grey80") +
+    facet_wrap(~task, scales = "free") +
+    geom_hline(data = setup_hlines, aes(yintercept = TickRSS), color = "grey80") +
     geom_line() +
-    ylab("Memory (RSS)") + xlab("Time (h:mm:ss)") + 
-    scale_colour_manual("Method", values=c("#ff7f2a", "#8d5fd3", "grey80")) +
+    ylab("Memory (RSS)") + xlab("Time (h:mm:ss)") +
+    scale_colour_manual("Method", values = c("#ff7f2a", "#8d5fd3", "grey80")) +
     scale_x_continuous(
         labels = format_elapsed,
         breaks = axis_breaks$TickELAPSED
@@ -173,11 +173,11 @@ g <- plot_data %>%
       labels = format_rss,
       breaks = axis_breaks$TickRSS
     ) +
-    theme_bw(base_size=9) +
+    theme_bw(base_size = 9) +
     theme(
       panel.grid.minor = element_blank(),
       panel.grid.major.x = element_blank(),
-      legend.position=c(5/6, 1/4)
+      legend.position = c(5/6, 1/4)
     )
 
 cairo_pdf("benchmark.pdf", 16/cm(1), 8/cm(1))

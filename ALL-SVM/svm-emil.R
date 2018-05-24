@@ -8,7 +8,7 @@ procedure <- modeling_procedure(
     fit_fun = function(x, y, degree = 1) {
         gc()
         nice_require("kernlab")
-        kernlab::ksvm(x = x, y = y, C=1,
+        kernlab::ksvm(x = x, y = y, C = 1,
              kernel = kernlab::polydot(degree = degree,
                                        scale = .01,
                                        offset = 1))

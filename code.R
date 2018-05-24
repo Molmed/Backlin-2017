@@ -66,10 +66,10 @@ prostate_split <- pre_split(x = prostate[1:8], y = prostate$lpsa,
 print(pre_pca)
 
 # Incorporation of pre-processing chain using list representation
-result <- evaluate(procedure = "lasso", 
-                   x = prostate[1:8], 
+result <- evaluate(procedure = "lasso",
+                   x = prostate[1:8],
                    y = prostate$lpsa,
-                   resample = cv, 
+                   resample = cv,
                    pre_process = list(pre_split, pre_scale,
                        function(data) pre_convert(data, x_fun = as.matrix)
                    ))
@@ -125,14 +125,14 @@ internal_tuning <- select(result, Fold = TRUE, "model", "model",
 head(internal_tuning)
 
 require("ggplot2")
-ggplot(internal_tuning, aes(x = Lambda, y = TuningRMSE, group = Fold)) + 
+ggplot(internal_tuning, aes(x = Lambda, y = TuningRMSE, group = Fold)) +
     geom_line()
 
 
 #----------------------------------------------[ Section 2.7: Model comparison ]
 
 # Compare regression methods
-comparison <- evaluate(procedure = c(LASSO = "lasso", 
+comparison <- evaluate(procedure = c(LASSO = "lasso",
                                      RR = "ridge_regression"),
                        x = prostate[1:8],
                        y = prostate$lpsa,
@@ -242,7 +242,7 @@ y <- with(pData(upp), Surv(t.rfs, e.rfs))
 pre_cox_pca <- function(data) {
     pca <- prcomp(data$fit$x[-1]) # Don't include the treatment feature
     data$fit$x <- data.frame(treatment = data$fit$x$treatment, pca$x)
-    data$test$x <- data.frame(treatment = data$test$x$treatment, 
+    data$test$x <- data.frame(treatment = data$test$x$treatment,
                               predict(pca, data$test$x[-1]))
     data
 }
@@ -250,8 +250,8 @@ pca_cox <- modeling_procedure(
     method = "pca-cox",
     fit_fun = function(x, y, nfeat) {
         terms <- c("treatment", sprintf("PC%i", seq_len(nfeat)))
-        formula <- as.formula(sprintf("y ~ %s", 
-                                      paste(terms, collapse=" + ")))
+        formula <- as.formula(sprintf("y ~ %s",
+                                      paste(terms, collapse = " + ")))
         coxph(formula, x)
     },
     predict_fun = predict_coxph,
@@ -261,7 +261,7 @@ pca_cox <- modeling_procedure(
 
 # Run
 options(emil_max_indent = 4)
-ho <- resample("holdout", y, nfold=10, test_fraction = 1/4,
+ho <- resample("holdout", y, nfold = 10, test_fraction = 1/4,
                subset = complete.cases(x))
 result <- evaluate(procedure = pca_cox, x = x, y = y, resample = ho,
                    pre_process = list(pre_split, pre_cox_pca))
@@ -273,7 +273,7 @@ fit_ensemble <- function(x, y, procedure_list) {
     samples <- resample("bootstrap", y, nfold = length(procedure_list))
     Map(function(procedure, fold) {
         try(fit(procedure, x[index_fit(fold), ], y[index_fit(fold)]),
-            silent=TRUE)
+            silent = TRUE)
     }, procedure_list, samples)
 }
 
@@ -301,7 +301,7 @@ predict_ensemble <- function(object, x) {
     n_model <- sum(sapply(object, inherits, "model"))
     return(list(
         prediction = factor(apply(vote[-1], 1, which.max),
-                            levels = 2:ncol(vote)-1, 
+                            levels = 2:ncol(vote)-1,
                             labels = colnames(vote)[-1]),
         vote = as.data.frame(vote[-1]/n_model)
     ))
@@ -309,8 +309,8 @@ predict_ensemble <- function(object, x) {
 
 ensemble <- modeling_procedure(
     method = "ensemble",
-    parameter = list(procedure = list(rep(c("lda", "qda", "rpart"), 
-                                          each=100)))
+    parameter = list(procedure = list(rep(c("lda", "qda", "rpart"),
+                                          each = 100)))
 )
 
 library("mlbench")
@@ -318,7 +318,7 @@ data("Sonar")
 cv <- resample("crossvalidation", Sonar$Class, nrepeat = 3, nfold = 5)
 comparison <- evaluate(procedure = list("lda", "qda", "rpart", ensemble),
                        x = Sonar, y = "Class", resample = cv)
-perf <- get_performance(comparison, format="long")
+perf <- get_performance(comparison, format = "long")
 ggplot(perf, aes(x = method, y = error)) + geom_boxplot() + coord_flip()
 
 
@@ -338,8 +338,8 @@ pre_pamr <- function(data) {
 }
 y <- factor(findInterval(prostate$lpsa, quantile(prostate$lpsa, 1:2/3)),
             labels = c("low", "intermediate", "high"))
-result <- evaluate(procedure = "pamr", 
-                   x = prostate[1:8], y = y, 
+result <- evaluate(procedure = "pamr",
+                   x = prostate[1:8], y = y,
                    resample = cv, pre_process = list(pre_split, pre_pamr))
 
 # Using emil to evalute caret models
