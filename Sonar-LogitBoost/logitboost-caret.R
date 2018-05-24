@@ -10,9 +10,9 @@ lbFuncs <- list(
         list(loop = loop, submodels = submodels)
     },
     type = "Classification",
-    parameters = data.frame(parameter = 'nIter',
-                            class = 'numeric',
-                            label = '# Boosting Iterations'),
+    parameters = data.frame(parameter = "nIter",
+                            class = "numeric",
+                            label = "# Boosting Iterations"),
     grid = function(x, y, len = NULL) {
         data.frame(nIter = 1 + ((1:len)*10))
     },
