@@ -15,7 +15,7 @@ options(digits = 3)
 
 
 sum(sapply(c(fit, tune, evaluate), function(f) length(body(f))))
-library(caret)
+library("caret")
 sum(sapply(c(train.default, caret:::nominalTrainWorkflow,
              caret:::looTrainWorkflow, caret:::adaptiveWorkflow),
            function(f) length(body(f))))
@@ -23,8 +23,8 @@ sum(sapply(c(train.default, caret:::nominalTrainWorkflow,
 
 #------------------------------------------------[ Section 2: The main example ]
 
-library(ElemStatLearn)
-data(prostate)
+library("ElemStatLearn")
+data("prostate")
 cv <- resample(method = "crossvalidation", y = prostate$lpsa,
                nrepeat = 2, nfold = 3)
 result <- evaluate(procedure = "lasso",
@@ -124,7 +124,7 @@ internal_tuning <- select(result, Fold = TRUE, "model", "model",
 )
 head(internal_tuning)
 
-require(ggplot2)
+require("ggplot2")
 ggplot(internal_tuning, aes(x = Lambda, y = TuningRMSE, group = Fold)) + 
     geom_line()
 
@@ -164,9 +164,9 @@ comparison %>%
 
 #---------------------------------------------------[ Section 2.8: Scalability ]
 
-library(parallel)
+library("parallel")
 cluster <- makeCluster(spec = 4)
-clusterEvalQ(cluster, library(emil))
+clusterEvalQ(cluster, library("emil"))
 clusterExport(cluster, "prostate")
 result <- parLapply(cluster, cv, function(fold){
     evaluate(procedure = "lasso",
@@ -204,7 +204,7 @@ library("parallel")
 options(mc.cores = 16)
 par_proc <- proc
 par_proc$fit_fun <- function(x, y, ntree, ...){
-    require(randomForest)
+    require("randomForest")
 
     # Calculate how many trees each core needs compute
     nc <- getOption("mc.cores")
@@ -231,10 +231,10 @@ if(any(!installed.pkg)){
     for(p in required.pkg[!installed.pkg])
         require(p, character.only = TRUE)
 }
-require(survival)
+require("survival")
 
 # Load data
-data(upp)
+data("upp")
 x <- data.frame(treatment = pData(upp)$treatment, t(exprs(upp)))
 y <- with(pData(upp), Surv(t.rfs, e.rfs))
 
@@ -277,8 +277,8 @@ fit_ensemble <- function(x, y, procedure_list){
     }, procedure_list, samples)
 }
 
-library(tidyr) # contains `spread`
-library(dplyr) # contains `count`
+library("tidyr") # contains `spread`
+library("dplyr") # contains `count`
 predict_ensemble <- function(object, x){
 
     # Use each individual classifiers to make predictions
@@ -313,8 +313,8 @@ ensemble <- modeling_procedure(
                                           each=100)))
 )
 
-library(mlbench)
-data(Sonar)
+library("mlbench")
+data("Sonar")
 cv <- resample("crossvalidation", Sonar$Class, nrepeat = 3, nfold = 5)
 comparison <- evaluate(procedure = list("lda", "qda", "rpart", ensemble),
                        x = Sonar, y = "Class", resample = cv)

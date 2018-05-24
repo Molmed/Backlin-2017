@@ -1,5 +1,5 @@
 source("../get-sonar.R")
-library(emil)
+library("emil")
 
 fit_LogitBoost <- function(x, y, nIter=ncol(x), ...){
     gc()

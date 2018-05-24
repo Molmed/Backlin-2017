@@ -1,5 +1,5 @@
 source("../get-sonar.R")
-library(caret)
+library("caret")
 
 lbFuncs <- list(
     library = "caTools",

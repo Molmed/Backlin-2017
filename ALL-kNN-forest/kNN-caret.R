@@ -1,7 +1,7 @@
 remove.values <- TRUE
 source("../get-geneexpression.R")
-library(caret)
-library(randomForest) # Must import it here since caret fails to import it automatically
+library("caret")
+library("randomForest") # Must import it here since caret fails to import it automatically
 
 cv <- replicate(3, createFolds(y, k = 5), simplify = FALSE)
 error <- matrix(NA, 3, 5)
