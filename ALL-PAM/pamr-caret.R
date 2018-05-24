@@ -12,13 +12,13 @@ trControl <- trainControl(
     allowParallel = FALSE)
 
 pam <- getModelInfo("pam")$pam
-pam$fit <- function(...){
+pam$fit <- function(...) {
     gc()
     getModelInfo("pam")$pam$fit(...)
 }
 
-for(i in seq_along(cv)){
-    for(j in seq_along(cv[[i]])){
+for (i in seq_along(cv)) {
+    for (j in seq_along(cv[[i]])) {
         trainIndex <- unlist(cv[[i]][-j])
         testIndex <- cv[[i]][[j]]
         model <- train(x[trainIndex, ], y[trainIndex],

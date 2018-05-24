@@ -23,9 +23,9 @@ rownames(jobs) <- NULL
 
 #--------------------------------------------------------------------[ Execute ]
 
-for(i in order(jobs$replicate, jobs$task, sample(nrow(jobs)))){
+for (i in order(jobs$replicate, jobs$task, sample(nrow(jobs)))) {
     setwd(file.path(basedir, jobs$task[i]))
-    if(!file.exists(jobs$output[i])){
+    if (!file.exists(jobs$output[i])) {
         cat(format(Sys.time()), "\n")
         cmd <- paste(file.path("..", "benchmark.sh"), jobs$input[i], jobs$title[i])
         system(cmd)
@@ -41,7 +41,7 @@ for(i in order(jobs$replicate, jobs$task, sample(nrow(jobs)))){
 
 setwd(basedir)
 
-tab <- do.call(rbind, lapply(1:nrow(jobs), function(i){
+tab <- do.call(rbind, lapply(1:nrow(jobs), function(i) {
     tryCatch({
         tab <- data.frame(task = jobs$task[i], method = jobs$method[i],
                           replicate = jobs$replicate[i],
@@ -59,7 +59,7 @@ tab <- do.call(rbind, lapply(1:nrow(jobs), function(i){
         tab_start <- tab %>%
             dplyr::filter(DATETIME == DATETIME[1]) %>%
             dplyr::filter(ELAPSED > min(ELAPSED))
-        if(nrow(tab_start) > 0){
+        if (nrow(tab_start) > 0) {
             # This is a multicore run, sum up all relevant processes
             tab <- tab[!tab$PID %in% tab_start$PID, ] %>%
                 group_by(DATETIME) %>%
@@ -100,7 +100,7 @@ ggplot(tab_summary, aes(x = method, y = MaxRSS)) +
 shift_rss <- 1e12
 shift_elapsed <- 1e6
 
-format_rss <- function(x){
+format_rss <- function(x) {
   # Based on http://www.moeding.net/archives/32-Metric-prefixes-for-ggplot2-scales.html
   x <- x %% shift_rss
   i <- sum(max(x, na.rm=TRUE) >= 1000^(1:3))
@@ -110,7 +110,7 @@ format_rss <- function(x){
   paste(format(round(x/divisor, 1), trim=TRUE, scientific=FALSE), prefix)
 }
 
-format_elapsed <- function(x){
+format_elapsed <- function(x) {
   format(ISOdate(2000, 1, 1, 0) + x %% shift_elapsed, "%k:%M:%S")
 }
 

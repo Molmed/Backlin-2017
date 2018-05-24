@@ -12,13 +12,13 @@ trControl <- trainControl(
     allowParallel = FALSE)
 
 svmPoly <- getModelInfo("svmPoly")$svmPoly
-svmPoly$fit <- function( ...){
+svmPoly$fit <- function( ...) {
     gc()
     getModelInfo("svmPoly")$svmPoly$fit(...)
 }
 
-for(i in seq_along(cv)){
-    for(j in seq_along(cv[[i]])){
+for (i in seq_along(cv)) {
+    for (j in seq_along(cv[[i]])) {
         trainIndex <- unlist(cv[[i]][-j])
         testIndex <- cv[[i]][[j]]
         model <- train(x[trainIndex, ], y[trainIndex],

@@ -13,13 +13,13 @@ trControl <- trainControl(
     allowParallel = FALSE)
 
 rpart2 <- getModelInfo("rpart2")$rpart2
-rpart2$fit <- function(...){
+rpart2$fit <- function(...) {
     gc()
     getModelInfo("rpart2")$rpart2$fit(...)
 }
 
-for(i in seq_along(cv)){
-    for(j in seq_along(cv[[i]])){
+for (i in seq_along(cv)) {
+    for (j in seq_along(cv[[i]])) {
         trainIndex <- unlist(cv[[i]][-j])
         testIndex <- cv[[i]][[j]]
         model <- train(x[trainIndex, ], y[trainIndex],

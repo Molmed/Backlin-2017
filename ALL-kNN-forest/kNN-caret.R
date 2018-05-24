@@ -13,13 +13,13 @@ trControl <- trainControl(
     allowParallel = FALSE)
 
 rf <- getModelInfo("parRF")$parRF
-rf$fit <- function(x, y, wts, param, lev, classProbs, ...){
+rf$fit <- function(x, y, wts, param, lev, classProbs, ...) {
     gc()
     randomForest(x, y, mtry = param$mtry, ...)
 }
 
-for(i in seq_along(cv)){
-    for(j in seq_along(cv[[i]])){
+for (i in seq_along(cv)) {
+    for (j in seq_along(cv[[i]])) {
         trainIndex <- unlist(cv[[i]][-j])
         testIndex <- cv[[i]][[j]]
         model <- train(x[trainIndex, ], y[trainIndex],

@@ -5,7 +5,7 @@ cv <- resample("crossvalidation", y, nrepeat = 3, nfold = 5)
 
 procedure <- modeling_procedure(
     method = "pamr",
-    fit_fun = function(...){
+    fit_fun = function(...) {
         gc()
         fit_pamr(...)
     },

@@ -20,7 +20,7 @@ files <- unique(c("examples.R", files[order(grepl("/", files))]))
 output <- "emil_v3_replication.txt"
 cat(header, file=output, append=FALSE)
 
-for(f in files){
+for (f in files) {
     cat("#===============================================================================\n",
         file = output, append = TRUE)
     cat("#", f, "\n\n", file = output, append = TRUE)
