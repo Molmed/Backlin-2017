@@ -6,7 +6,7 @@ This repository contains all code required to run the examples,
 benchmarking test, and producing the figures of the original publication.
 
 ## Code examples from the paper
-The code examples of section 2 and 3 of the paper can be found in the script `examples.R`.
+The code examples of section 2 and 3 of the paper can be found in the script `code.R`.
 
 ## Benchmark study
 Clone, install dependencies, and run in one go:
