@@ -2,6 +2,10 @@
 
 repos <- "https://ftp.acc.umu.se/mirror/CRAN/"
 
+.libPaths("vendor")
+dir.create("vendor", showWarnings = FALSE)
+dir.create("vendor_cache", showWarnings = FALSE)
+
 if (!require("devtools")) {
   install.packages("devtools", repos=repos)
   stopifnot(require("devtools"))
@@ -19,10 +23,10 @@ install_dep <- function(pkg, version, repo, lib = NULL) {
   if (!pkg %in% row.names(ip)) {
     if (repo == "bioc") {
       source("https://bioconductor.org/biocLite.R")
-      biocLite(pkg, lib = lib)
+      biocLite(pkg, lib = lib, destdir="vendor_cache")
       return(TRUE)
     }
-    install_version(pkg, version = version, type = "source", lib = lib, repos = repos)
+    install_version(pkg, version = version, type = "source", lib = lib, repos = repos, destdir="vendor_cache")
     return(TRUE)
   }
 
@@ -35,11 +39,11 @@ install_dep <- function(pkg, version, repo, lib = NULL) {
     return(FALSE)  # Don't overwrite existing package in default lib
   }
 
-  install_version(pkg, version = version, type = "source", lib = lib, repos = repos)
+  install_version(pkg, version = version, type = "source", lib = lib, repos = repos, destdir="vendor_cache")
 }
 
 for (i in 1:nrow(deps)) {
-  install_dep(deps$package[i], deps$version[i], deps$repo[i], lib = "vendor")
+  install_dep(deps$package[i], deps$version[i], deps$repo[i])
 }
 
 missing_packages <- setdiff(deps$package, row.names(installed.packages()))
