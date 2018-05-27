@@ -179,7 +179,7 @@ result <- parLapply(cluster, cv, function(fold) {
                  pre_convert(x_fun = as.matrix)
              },
              .cores = 8,
-             .checkpoint_dir = "/home/user/analysis")
+             .checkpoint_dir = tempdir())
 })
 
 
