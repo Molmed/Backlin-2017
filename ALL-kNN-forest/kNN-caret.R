@@ -1,4 +1,5 @@
-remove.values <- TRUE
+set.seed(as.integer(commandArgs(trailing = TRUE)))
+remove.values <- TRUE  # tells get-geneexpression.R to remove random y values
 source("../get-geneexpression.R")
 library("caret")
 library("randomForest") # Must import it here since caret fails to import it automatically

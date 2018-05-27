@@ -7,16 +7,24 @@ basedir <- getwd()
 library("dplyr")
 library("ggplot2")
 library("tidyr")
+library("digest")
 
+make_seed <- function(x) {
+    sum(as.integer(digest::digest(x, algo = "md5", raw = TRUE)))
+}
 
+set.seed(3292734)
 setwd(basedir)
 jobs <- data.frame(input = dir(recursive = TRUE)) %>%
     dplyr::filter(grepl("^[^/]+/[^/]+.R$", input))
 jobs <- expand.grid(input = jobs$input, replicate = 1:5) %>%
     tidyr::extract(input, c("task", "input", "method"),
             "^([^/]+)/(\\w+-([^/]+).R)$") %>%
-    mutate(title = sprintf("%s-%s-%i", task, method, replicate)) %>%
-    mutate(output = sprintf("output/%s.ps.log", title))
+    mutate(
+        title = sprintf("%s-%s-%i", task, method, replicate),
+        output = sprintf("output/%s.ps.log", title),
+        random_seed = sapply(paste(task, replicate), make_seed)
+    )
 jobs <- jobs[jobs$task != "rf-parallelization", ]
 rownames(jobs) <- NULL
 
@@ -27,7 +35,7 @@ for (i in order(jobs$replicate, jobs$task, sample(nrow(jobs)))) {
     setwd(file.path(basedir, jobs$task[i]))
     if (!file.exists(jobs$output[i])) {
         cat(format(Sys.time()), "\n")
-        cmd <- paste(file.path("..", "benchmark.sh"), jobs$input[i], jobs$title[i])
+        cmd <- paste(file.path("..", "benchmark.sh"), jobs$input[i], jobs$title[i], jobs$random_seed[i])
         system(cmd)
         files <- dir(".", "*.log")
         dir.create("output", showWarnings = FALSE)

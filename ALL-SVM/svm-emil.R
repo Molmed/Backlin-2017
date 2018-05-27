@@ -1,3 +1,4 @@
+set.seed(as.integer(commandArgs(trailing = TRUE)))
 source("../get-geneexpression.R")
 library("emil")
 
