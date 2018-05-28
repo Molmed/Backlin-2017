@@ -31,7 +31,7 @@ install_dep <- function(pkg, version, repo, lib = NULL) {
   }
 
   have_version <- ip[pkg, "Version"]
-  if (version == have_version) {
+  if (version == have_version || repo == "bioc") {
     return(TRUE)
   }
 
@@ -43,7 +43,7 @@ install_dep <- function(pkg, version, repo, lib = NULL) {
 }
 
 for (i in 1:nrow(deps)) {
-  install_dep(deps$package[i], deps$version[i], deps$repo[i])
+  install_dep(deps$package[i], deps$version[i], deps$repo[i], lib = "vendor")
 }
 
 missing_packages <- setdiff(deps$package, row.names(installed.packages()))

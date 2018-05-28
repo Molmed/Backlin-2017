@@ -17,3 +17,6 @@ all_jobs.err.log:
 backup:
 	find . -path "*/output/*.log" -print | zip backup.zip -@
 	
+code-examples: dependencies
+	R --vanilla -f code.R
+
