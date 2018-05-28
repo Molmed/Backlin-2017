@@ -2,6 +2,7 @@ clean:
 	find . -name "*.log" | xargs rm
 	rm -f all_jobs.err.log
 	rm -f Rplots.pdf
+	rm -f code.zip
 
 .PHONY: dependencies all_jobs.err.log
 
@@ -20,3 +21,6 @@ backup:
 code-examples: dependencies
 	R --vanilla -f code.R
 
+
+code.zip:
+	git archive --format zip --output $@ master

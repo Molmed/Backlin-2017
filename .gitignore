@@ -1,4 +1,5 @@
 vendor
+vendor_cache
 data
 memstats
 plots
