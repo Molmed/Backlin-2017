@@ -5,26 +5,22 @@
 #   The benchmarking study of section 4 can be found in `benchmark_setup.R`.
 #-------------------------------------------------------------------------------
 
-# Install and load required packages
-required.pkg <- c("ElemStatLearn", "emil", "randomForest", "survival")
-installed.pkg <- sapply(required.pkg, require, character.only = TRUE)
-if (any(!installed.pkg)) {
-    install.packages(required.pkg[!installed.pkg])
-}
+.libPaths("vendor")
 options(digits = 3)
 
 
+library("emil")
 sum(sapply(c(fit, tune, evaluate), function(f) length(body(f))))
+
 library("caret")
-sum(sapply(c(train.default, caret:::nominalTrainWorkflow,
+sum(sapply(c(caret:::train.default, caret:::nominalTrainWorkflow,
              caret:::looTrainWorkflow, caret:::adaptiveWorkflow),
            function(f) length(body(f))))
 
 
 #------------------------------------------------[ Section 2: The main example ]
 
-library("ElemStatLearn")
-data("prostate")
+data("prostate", package = "ElemStatLearn")
 cv <- resample(method = "crossvalidation", y = prostate$lpsa,
                nrepeat = 2, nfold = 3)
 result <- evaluate(procedure = "lasso",
@@ -124,7 +120,7 @@ internal_tuning <- select(result, Fold = TRUE, "model", "model",
 )
 head(internal_tuning)
 
-require("ggplot2")
+library("ggplot2")
 ggplot(internal_tuning, aes(x = Lambda, y = TuningRMSE, group = Fold)) +
     geom_line()
 
@@ -143,23 +139,6 @@ comparison <- evaluate(procedure = c(LASSO = "lasso",
                            pre_convert(x_fun = as.matrix)
                        })
 get_performance(comparison, format = "wide")
-
-# Compare pre-processing chains
-chains <- list(
-    standard = function(x, y, fold) {
-        pre_split(x, y, fold) %>% pre_convert(x_fun = as.matrix)
-    },
-    pca = function(x, y, fold) {
-        pre_split(x, y, fold) %>% pre_pca
-    }
-)
-comparison <- lapply(chains, function(my_chain) {
-    evaluate(procedure = "lasso", x = prostate[1:8], y = prostate$lpsa,
-             resample = cv, pre_process = my_chain)
-})
-comparison %>%
-    select(pre_process = TRUE, get_performance) %>%
-    spread(pre_process, error)
 
 
 #---------------------------------------------------[ Section 2.8: Scalability ]
@@ -222,19 +201,11 @@ system.time(result_par2 <- evaluate(procedure = par_proc, x = x, y = y,
 
 #---------------------------------------------[ Section 3.2: Survival modeling ]
 
-# Install necessary bioconductor packages
-required.pkg <- c("Biobase", "breastCancerUPP")
-installed.pkg <- sapply(required.pkg, require, character.only = TRUE)
-if (any(!installed.pkg)) {
-    source("http://bioconductor.org/biocLite.R")
-    biocLite(required.pkg[!installed.pkg])
-    for (p in required.pkg[!installed.pkg])
-        require(p, character.only = TRUE)
-}
-require("survival")
-
 # Load data
-data("upp")
+library("Biobase")
+library("survival")
+data("upp", package = "breastCancerUPP")
+
 x <- data.frame(treatment = pData(upp)$treatment, t(exprs(upp)))
 y <- with(pData(upp), Surv(t.rfs, e.rfs))
 
@@ -277,7 +248,6 @@ fit_ensemble <- function(x, y, procedure_list) {
     }, procedure_list, samples)
 }
 
-library("tidyr") # contains `spread`
 library("dplyr") # contains `count`
 predict_ensemble <- function(object, x) {
 
@@ -313,8 +283,7 @@ ensemble <- modeling_procedure(
                                           each = 100)))
 )
 
-library("mlbench")
-data("Sonar")
+data("Sonar", package = "mlbench")
 cv <- resample("crossvalidation", Sonar$Class, nrepeat = 3, nfold = 5)
 comparison <- evaluate(procedure = list("lda", "qda", "rpart", ensemble),
                        x = Sonar, y = "Class", resample = cv)
