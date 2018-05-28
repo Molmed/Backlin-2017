@@ -2,13 +2,14 @@
 
 repos <- "https://ftp.acc.umu.se/mirror/CRAN/"
 
-.libPaths("vendor")
 dir.create("vendor", showWarnings = FALSE)
 dir.create("vendor_cache", showWarnings = FALSE)
 
-if (!require("devtools")) {
-  install.packages("devtools", repos=repos)
-  stopifnot(require("devtools"))
+.libPaths("vendor")
+
+if (!require("devtools", lib = "vendor")) {
+  install.packages("devtools", lib = "vendor", repos=repos)
+  stopifnot(require("devtools", lib = "vendor"))
 }
 
 deps <- read.csv("dependencies.csv", stringsAsFactors = FALSE)
