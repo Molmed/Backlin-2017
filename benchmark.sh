@@ -2,7 +2,7 @@
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-if [ $# != 2 ]; then
+if [ $# != 3 ]; then
     echo "Usage ./benchmark.sh <R-script> <title> <random-seed>"
     exit 0
 fi
