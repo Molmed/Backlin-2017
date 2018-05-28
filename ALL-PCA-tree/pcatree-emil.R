@@ -1,11 +1,12 @@
-source("../get-geneexpression.r")
-library(emil)
+set.seed(as.integer(commandArgs(trailing = TRUE)))
+source("../get-geneexpression.R")
+library("emil")
 
 cv <- resample("crossvalidation", y, nrepeat = 2, nfold = 3)
 
 procedure <- modeling_procedure(
     method = "rpart",
-    fit_fun = function(...){
+    fit_fun = function(...) {
         gc()
         fit_rpart(..., xval = 0)
     },
@@ -13,7 +14,7 @@ procedure <- modeling_procedure(
 )
 
 result <- evaluate(procedure, x, y, resample = cv,
-    pre_process = function(x, y, fold){
+    pre_process = function(x, y, fold) {
         pre_split(x, y, fold) %>%
         pre_pca(ncomponent = 20) %>%
         pre_convert(x_fun = as.data.frame)
@@ -23,6 +24,7 @@ result <- evaluate(procedure, x, y, resample = cv,
 )
 
 error <- get_performance(result)
+print(error)
 
 Sys.sleep(3)
 

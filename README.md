@@ -1,21 +1,30 @@
 Developer Friendly and Computationally Efficient Predictive Modeling without Information Leakage: The `emil` Package for R
 =======================
-Christofer L Bäcklin, Mats G Gustafsson
+Christofer L Bäcklin, Mats G Gustafsson.
 
-Original publication in submission.
+This repository contains all code required to run the examples,
+benchmarking test, and producing the figures of the original publication.
 
-This repository contains all code required to run the examples, benchmarking test, and producing the figures of the paper.
+## Code examples from the paper
+The code examples of section 2 and 3 of the paper can be found in the script `code.R`.
 
-System requirements
--------------------
-The code is written for a Unix or Linux operating system with R version 3.0.2 or later, but can be modified to run under Windows fairly easily. The following packages are required, but installed automatically: `BioBase`, `breastCancerUpp`, `caret`, `cforest`, `data.table`, `doMC`, `emil`, `GEOquery`, `glmnet`, `gtools`, `pamr`, `parallel`, and `randomForest`.
+## Benchmark study
+Clone, install dependencies, and run in one go:
 
-Instructions
-------------
-The most convenient way to run the analysis is to clone the repo to your computer and run the files as shown below (commands for unix/linux).
+```
+git clone git@github.com:Molmed/Backlin-2017.git
+cd Backlin-2017
+make benchmark
+```
 
-    git clone git@github.com:Molmed/Backlin-2014.git
-    cd Backlin-2014
-    R -f benchmark_setup.R
+The code is written for MacOS or Linux operating systems with R version
+3.5.0 and package dependencies listed in `dependencies.csv`.
 
-The code examples of section 2 and 3 of the paper can be found in the script `examples.R`.
+In addition to R dependencies you also need Python (preferably version 3.5.2) to
+enable memory profiling, implemented using [syrupy](https://github.com/jeetsukumaran/Syrupy).
+
+The code should work fine with other versions of R, Python, and package dependencies too
+but is not _guaranteed_ to do so.
+If you encounter errors please post an issue or a even better a pull-request with a fix.
+
+

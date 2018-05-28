@@ -1,11 +1,12 @@
-source("../get-geneexpression.r")
-library(emil)
+set.seed(as.integer(commandArgs(trailing = TRUE)))
+source("../get-geneexpression.R")
+library("emil")
 
 cv <- resample("crossvalidation", y, nrepeat = 3, nfold = 5)
 
 procedure <- modeling_procedure(
     method = "pamr",
-    fit_fun = function(...){
+    fit_fun = function(...) {
         gc()
         fit_pamr(...)
     },
@@ -20,6 +21,7 @@ result <- evaluate(procedure, x, y, resample = cv,
 )
 
 error <- get_performance(result)
+print(error)
 
 Sys.sleep(3)
 
