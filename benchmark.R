@@ -152,7 +152,7 @@ axis_breaks <- shift %>%
   transmute(
     task = task,
     TickRSS = TickRSS.y,
-    TickELAPSED = TickELAPSED.y,
+    TickELAPSED = TickELAPSED.y
   )
 
 plot_data <- mean_tab %>%
@@ -163,6 +163,15 @@ plot_data <- mean_tab %>%
     ELAPSED = ELAPSED + ShiftELAPSED
   )
 
+rug_data <- tab %>%
+  dplyr::filter(method != "setup") %>%
+  inner_join(shift, by = "task") %>%
+  group_by(task, method, replicate) %>%
+  summarise(
+    ELAPSED = max(ELAPSED + ShiftELAPSED),
+    MeanRSS = NA_real_
+  )
+
 setup_hlines <- axis_breaks %>%
   dplyr::filter(is.na(TickELAPSED))
 
@@ -171,6 +180,7 @@ g <- plot_data %>%
     facet_wrap(~task, scales = "free") +
     geom_hline(data = setup_hlines, aes(yintercept = TickRSS), color = "grey80") +
     geom_line() +
+    geom_rug(data = rug_data, sides = "b") +
     ylab("Memory (RSS)") + xlab("Time (h:mm:ss)") +
     scale_colour_manual("Method", values = c("#ff7f2a", "#8d5fd3", "grey80")) +
     scale_x_continuous(
