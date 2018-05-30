@@ -248,9 +248,9 @@ fit_ensemble <- function(x, y, procedure_list) {
     }, procedure_list, samples)
 }
 
-library("dplyr") # contains `count`
+library("dplyr")
+library("tidyr")
 predict_ensemble <- function(object, x) {
-
     # Use each individual classifiers to make predictions
     prediction <- lapply(object, function(model) {
         if (inherits(model, "model")) {
@@ -307,6 +307,7 @@ pre_pamr <- function(data) {
 }
 y <- factor(findInterval(prostate$lpsa, quantile(prostate$lpsa, 1:2/3)),
             labels = c("low", "intermediate", "high"))
+cv <- resample("crossvalidation", y, nfold = 5, nrep = 1)
 result <- evaluate(procedure = "pamr",
                    x = prostate[1:8], y = y,
                    resample = cv, pre_process = list(pre_split, pre_pamr))

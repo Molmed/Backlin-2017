@@ -21,3 +21,4 @@ cran,dplyr,0.7.5,Data wrangling
 cran,ggplot2,2.2.1,Plotting
 cran,scales,0.5.0,Plotting
 cran,tidyr,0.8.1,Data wrangling
+cran,survival,2.42-3,2.39-4 that comes with R 3.5.0 has bugs: https://stackoverflow.com/questions/43590602/r-coxph-error-object-ccoxmart-not-found
