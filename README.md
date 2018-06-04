@@ -12,7 +12,7 @@ The code examples of section 2 and 3 of the paper can be found in the script `co
 Clone, install dependencies, and run in one go:
 
 ```
-git clone git@github.com:Molmed/Backlin-2017.git
+git clone https://github.com:Molmed/Backlin-2017.git
 cd Backlin-2017
 make benchmark
 ```
