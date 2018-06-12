@@ -3,6 +3,7 @@
 
 #----------------------------------------------------------------------[ Setup ]
 
+.libPaths("vendor")
 basedir <- getwd()
 library("dplyr")
 library("ggplot2")
@@ -119,7 +120,7 @@ format_rss <- function(x) {
 }
 
 format_elapsed <- function(x) {
-  format(ISOdate(2000, 1, 1, 0) + x %% shift_elapsed, "%k:%M:%S")
+  format(ISOdate(2000, 1, 1, 0) + x %% shift_elapsed, "%M:%S")
 }
 
 tab_setup <- tab %>%
@@ -181,7 +182,7 @@ g <- plot_data %>%
     geom_hline(data = setup_hlines, aes(yintercept = TickRSS), color = "grey80") +
     geom_line() +
     geom_rug(data = rug_data, sides = "b") +
-    ylab("Memory (RSS)") + xlab("Time (h:mm:ss)") +
+    ylab("Memory (RSS)") + xlab("Time (mm:ss)") +
     scale_colour_manual("Method", values = c("#ff7f2a", "#8d5fd3", "grey80")) +
     scale_x_continuous(
         labels = format_elapsed,

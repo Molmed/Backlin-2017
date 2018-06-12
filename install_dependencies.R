@@ -47,7 +47,7 @@ for (i in 1:nrow(deps)) {
   install_dep(deps$package[i], deps$version[i], deps$repo[i], lib = "vendor")
 }
 
-missing_packages <- setdiff(deps$package, row.names(installed.packages()))
+missing_packages <- setdiff(deps$package, row.names(installed.packages(lib = "vendor")))
 if (length(missing_packages) > 0) {
   stop(paste("failed to install packages:", paste(missing_packages, collapse = ", ")))
 }
