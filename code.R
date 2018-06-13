@@ -2,7 +2,7 @@
 
 #-------------------------------------------------------------------------------
 #   This script contains the code examples in sections 2 and 3 of the paper.
-#   The benchmarking study of section 4 can be found in `benchmark_setup.R`.
+#   The benchmarking study of section 4 can be found in `benchmark.R`.
 #-------------------------------------------------------------------------------
 
 .libPaths("vendor")
