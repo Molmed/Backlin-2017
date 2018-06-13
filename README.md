@@ -12,7 +12,7 @@ The code examples of section 2 and 3 of the paper can be found in the script `co
 Clone, install dependencies, and run in one go:
 
 ```
-git clone https://github.com:Molmed/Backlin-2017.git
+git clone https://github.com/Molmed/Backlin-2017.git
 cd Backlin-2017
 make benchmark
 ```
@@ -25,6 +25,6 @@ enable memory profiling, implemented using [syrupy](https://github.com/jeetsukum
 
 The code should work fine with other versions of R, Python, and package dependencies too
 but is not _guaranteed_ to do so.
-If you encounter errors please post an issue or a even better a pull-request with a fix.
+If you encounter errors please post an issue or even better a pull-request with a fix.
 
 
