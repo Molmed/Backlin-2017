@@ -7,6 +7,7 @@
 
 .libPaths("vendor")
 options(digits = 3)
+set.seed(2832362)
 
 
 library("emil")
@@ -19,6 +20,7 @@ sum(sapply(c(caret:::train.default, caret:::nominalTrainWorkflow,
 
 
 #------------------------------------------------[ Section 2: The main example ]
+
 
 data("prostate", package = "ElemStatLearn")
 cv <- resample(method = "crossvalidation", y = prostate$lpsa,
@@ -164,6 +166,7 @@ result <- parLapply(cluster, cv, function(fold) {
 
 #-------------------------------------[ Section 3.1: A parallelized simulation ]
 
+
 # Set up the problem
 x <- matrix(rnorm(100 * 10000), 100, 10000)
 y <- gl(2, 50)
@@ -200,6 +203,8 @@ system.time(result_par2 <- evaluate(procedure = par_proc, x = x, y = y,
 
 
 #---------------------------------------------[ Section 3.2: Survival modeling ]
+
+set.seed(267404)
 
 # Load data
 library("Biobase")
@@ -239,6 +244,8 @@ result <- evaluate(procedure = pca_cox, x = x, y = y, resample = ho,
 
 
 #----------------------------------------------[ Section 3.3: Custom ensembles ]
+
+set.seed(35092)
 
 fit_ensemble <- function(x, y, procedure_list) {
     samples <- resample("bootstrap", y, nfold = length(procedure_list))
