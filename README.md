@@ -8,6 +8,20 @@ benchmarking test, and producing the figures of the original publication.
 ## Code examples from the paper
 The code examples of section 2 and 3 of the paper can be found in the script `code.R`.
 
+The file should be run using the makefile command below:
+
+```bash
+make code-examples
+```
+
+Alternatively, to skip the most time consuming steps you may also run the like
+this:
+
+```bash
+R --vanilla -f code.R --args --quick
+```
+
+
 ## Benchmark study
 Clone, install dependencies, and run in one go:
 
